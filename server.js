@@ -73,6 +73,7 @@ app.get('/action/:id', function(req, res) {
 // 	  })
 // })
 // listen on 8000
+//process.env.PORT will use the browsers port
 var server = app.listen(process.env.PORT || 8000, function() {
  console.log("listening on port 8000");
 })
@@ -101,15 +102,8 @@ io.sockets.on('connection', function (socket) {
   }
   console.log("WE ARE USING SOCKETS!");
   console.log(socket.id);
-  var name = true
   socket.on("user_sent", function (data){
     var selector = getRandomInt(0,3);
-    if(name){
-      user = data.reason
-      socket.emit('server_response', {response: "Nice to meet you "+data.reason+". What do you want to know?"});
-      name = false;
-      return;
-    }
     client.message(data.reason, {})
     .then((data) => {
       console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
