@@ -85,7 +85,7 @@
             font-family: 'Lato';
             border-radius: 7px;
             width: 60%;
-            background: linear-gradient(to right, rgba(0,0,0,0.78) 0%, rgba(9,9,10,0.85) 7%, rgba(36,17,29,0.99) 21%, rgba(82,30,61,0.99) 45%, rgba(46,46,54,1) 100%);
+            background: linear-gradient(to right, rgba(0,0,0,0.78) 0%, rgba(9,9,10,0.85) 7%, rgba(30,15,25,0.99) 21%, rgba(66,25,50,0.99) 45%, rgba(46,46,54,1) 100%);
             margin-top: 10px;
         }
         #go {
@@ -132,7 +132,15 @@
                     console.log('The server says: ' + data.response);
                     objDiv.scrollTop = objDiv.scrollHeight; 
                 });
-
+            $('#tribe_info').click(function() {
+                socket.emit("about_tribes");
+            })
+            $('#clan_info').click(function() {
+                socket.emit("about_clans");
+            })
+            $('#vilages_info').click(function() {
+                socket.emit("about_vilalges");
+            })
         })
     </script>
 </head>
@@ -143,9 +151,9 @@
         <div id="content">
             <p class="chatbot"> <span class="chatbotspan">Hello! My name is Habari. What would you like help with?.</span></p>
             <p class="chatbot"> <span class="chatbotspan">Here are some options to get you started.</span></p>
-            <button class="action">Tell me about tribes</button><br>
-            <button class="action">What is a clan?</button><br>
-            <button class="action">How are villages made</button>
+            <button class="action" id="tribe_info">Tell me about tribes</button><br>
+            <button class="action" id="clan_info">What is a clan?</button><br>
+            <button class="action" id="vilages_info">How are villages made</button>
         </div>
         <input placeholder="Send a message" type="text">
         <button id="go">GO!</button>

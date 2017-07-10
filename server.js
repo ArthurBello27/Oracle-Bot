@@ -102,6 +102,9 @@ io.sockets.on('connection', function (socket) {
   }
   console.log("WE ARE USING SOCKETS!");
   console.log(socket.id);
+  socket.on("about_tribes", function (data){
+    socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
+  })
   socket.on("user_sent", function (data){
     var selector = getRandomInt(0,3);
     client.message(data.reason, {})
