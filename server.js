@@ -73,7 +73,7 @@ app.get('/action/:id', function(req, res) {
 // 	  })
 // })
 // listen on 8000
-var server = app.listen(8000, function() {
+var server = app.listen(process.env.PORT || 8000, function() {
  console.log("listening on port 8000");
 })
 const {Wit, log} = require('node-wit');
