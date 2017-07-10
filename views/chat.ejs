@@ -1,28 +1,34 @@
 <html>
 <head>
 <title></title>
+<link href="https://fonts.googleapis.com/css?family=Lato:300" rel="stylesheet">
     <style type="text/css">
+
+
         body {
             padding: 150px;
             margin: auto;
             text-align: center;
         }
         #holder {
-            width: 300px;
-            height: 450px;
-            border: 1px solid silver;
-            margin: auto;
-            position: relative;
+                width: 300px;
+                height: 450px;
+                border: 1px solid silver;
+                margin: auto;
+                position: relative;
+                border-radius: 20px;
         }
         h3 {
-            background-color: cornflowerblue;
+            background-color: #3c353d;
             -webkit-margin-before: 0em;
             -webkit-margin-after: 0em;
-            font-family: sans-serif;
+            font-family: 'Lato';
             color: white;
             height: 30px;
             text-align: left;
             padding-left: 10px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
             padding-top: 10px;
 
         }
@@ -38,29 +44,20 @@
             width: 100%;
             height: 368px;
         }
-        #go {
-            background-color: cornflowerblue;
-            width: 14.9%;
-            right: 0;
-            border: none;
-            position: absolute;
-            bottom: 0;
-            color: white;
-            height: 40px;
-        }
+        
         .chatbot {
             text-align: left;
             margin: 10px;
         }
         .chatbotspan {
-            background: darkorange;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: sans-serif;
-            max-width: 55%;
-            text-align: left;
-            display: inline-block;
+                background: dimgrey;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                font-family: 'Lato';
+                max-width: 55%;
+                text-align: left;
+                display: inline-block;
         }
         .user {
             text-align: right;
@@ -80,6 +77,26 @@
         #loading {
             float: left;
             transition: .2s;
+        }
+        .action {
+            color: white;
+            padding: 10px 20px 10px 20px;
+            border: none;
+            font-family: 'Lato';
+            border-radius: 7px;
+            width: 60%;
+            background: linear-gradient(to right, rgba(0,0,0,0.78) 0%, rgba(9,9,10,0.85) 7%, rgba(36,17,29,0.99) 21%, rgba(82,30,61,0.99) 45%, rgba(46,46,54,1) 100%);
+            margin-top: 10px;
+        }
+        #go {
+            background-color: cornflowerblue;
+            width: 14.9%;
+            right: 0;
+            border: none;
+            position: absolute;
+            bottom: 0;
+            color: white;
+            height: 40px;
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -101,7 +118,7 @@
                     objDiv.scrollTop = objDiv.scrollHeight;
                     }
             });
-             $('button').click(function (){
+             $('#go').click(function (){
                 $('#content').append("<p class='user'><span class='userspan'>"+$('input').val()+"</span></p><img id='loading' style='width: 50px' src='http://res.cloudinary.com/ltrzxluwr/image/upload/v1499347205/ezgif.com-crop_oy4awb.gif'>");
                 
                 socket.emit("user_sent", {reason: $('input').val()});
@@ -113,7 +130,7 @@
                     $('#content').append("<p class='chatbot'><span class='chatbotspan'>"+data.response+"</span></p>");
                     $('#loading').remove();
                     console.log('The server says: ' + data.response);
-                    objDiv.scrollTop = objDiv.scrollHeight;
+                    objDiv.scrollTop = objDiv.scrollHeight; 
                 });
 
         })
@@ -124,8 +141,11 @@
     <div id="holder">
         <h3>Habari Chat Bot</h3>
         <div id="content">
-            <p class="chatbot"> <span class="chatbotspan">Hello! My name is Habari. What's your name?.</span></p>
-            
+            <p class="chatbot"> <span class="chatbotspan">Hello! My name is Habari. What would you like help with?.</span></p>
+            <p class="chatbot"> <span class="chatbotspan">Here are some options to get you started.</span></p>
+            <button class="action">Tell me about tribes</button><br>
+            <button class="action">What is a clan?</button><br>
+            <button class="action">How are villages made</button>
         </div>
         <input placeholder="Send a message" type="text">
         <button id="go">GO!</button>
