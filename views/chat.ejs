@@ -11,8 +11,8 @@
             text-align: center;
         }
         #holder {
-                width: 300px;
-                height: 450px;
+                width: 500px;
+                height: 550px;
                 border: 1px solid silver;
                 margin: auto;
                 position: relative;
@@ -36,14 +36,25 @@
         input {
             position: absolute;
             bottom: 0;
+            outline: none !important;
             width: 85%;
             left: 0;
             height: 40px;
+            border-bottom-left-radius: 20px;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid silver;
+            transition: 0.2s;
+        }
+        input:focus{
+          box-shadow: 0 0 5px coral;
+          border: 1px solid coral;
+          border-bottom-left-radius: 20px;
         }
         #content {
             overflow: auto;
             width: 100%;
-            height: 368px;
+            height: 473px;
         }
         
         .chatbot {
@@ -51,8 +62,8 @@
             margin: 10px;
         }
         .chatbotspan {
-                background: palevioletred;
-                color: white;
+                background: silver;
+                color: black;
                 padding: 10px;
                 border-radius: 5px;
                 font-family: 'Lato';
@@ -65,8 +76,26 @@
             margin: 10px;
 
         }
+        ul {
+                color: white;
+                padding: 0;
+                text-align: left;
+                -webkit-margin-before: 0;
+                -webkit-margin-after: 0;
+                margin: 10px;
+        }
+        li {
+                background: grey;
+                display: inline-block;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                font-family: 'Lato';
+                max-width: 55%;
+                padding: 10px;
+        }
         .userspan {
-            background: cornflowerblue;
+            background: #824F5D;
             color: white;
             padding: 10px;
             border-radius: 5px;
@@ -90,7 +119,7 @@
             margin-top: 10px;
         }
         #go {
-            background-color: cornflowerblue;
+            background-color: orangered;
             width: 14.9%;
             right: 0;
             border: none;
@@ -98,6 +127,7 @@
             bottom: 0;
             color: white;
             height: 40px;
+            border-bottom-right-radius: 20px;
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -111,27 +141,43 @@
 
             $('input').keypress(function(e) {
                 if(e.which == 13) {
+                    if($('input').val() != "" && $('input').val() != " "){
+                        $('button').prop('disabled', 'disabled');
+                        $('#content').append("<p class='user'><span class='userspan'>"+$('input').val()+"</span></p><img id='loading' style='width: 50px' src='http://res.cloudinary.com/ltrzxluwr/image/upload/v1499347205/ezgif.com-crop_oy4awb.gif'>");
+                        
+                        socket.emit("user_sent", {reason: $('input').val()});
+                        $('input').val("");
+                        
+                        objDiv.scrollTop = objDiv.scrollHeight;
+                        }
+                    }
+            });
+             $('#go').click(function (){
+                console.log($('input').val());
+                if($('input').val() != "" && $('input').val() != " "){
+                    $('button').prop('disabled', 'disabled');
                     $('#content').append("<p class='user'><span class='userspan'>"+$('input').val()+"</span></p><img id='loading' style='width: 50px' src='http://res.cloudinary.com/ltrzxluwr/image/upload/v1499347205/ezgif.com-crop_oy4awb.gif'>");
                     
                     socket.emit("user_sent", {reason: $('input').val()});
                     $('input').val("");
                     
                     objDiv.scrollTop = objDiv.scrollHeight;
-                    }
-            });
-             $('#go').click(function (){
-                $('#content').append("<p class='user'><span class='userspan'>"+$('input').val()+"</span></p><img id='loading' style='width: 50px' src='http://res.cloudinary.com/ltrzxluwr/image/upload/v1499347205/ezgif.com-crop_oy4awb.gif'>");
-                
-                socket.emit("user_sent", {reason: $('input').val()});
-                $('input').val("");
-                
-                objDiv.scrollTop = objDiv.scrollHeight;
+                }
                 });
+
                 socket.on('server_response', function (data){
-                    $('#content').append("<p class='chatbot'><span class='chatbotspan'>"+data.response+"</span></p>");
-                    $('#loading').remove();
-                    console.log('The server says: ' + data.response);
-                    objDiv.scrollTop = objDiv.scrollHeight; 
+                    if(data.reason == "hb"){
+                        $('button').prop('disabled', false);
+                        $('#content').append(data.response);
+                         $('#loading').remove();
+                        objDiv.scrollTop = objDiv.scrollHeight; 
+                    }
+                    else{$('button').prop('disabled', false);
+                        $('#content').append("<p class='chatbot'><span class='chatbotspan'>"+data.response+"</span></p>");
+                        $('#loading').remove();
+                        console.log('The server says: ' + data.response);
+                        objDiv.scrollTop = objDiv.scrollHeight; 
+                    }
                 });
             $('#tribe_info').click(function() {
                 socket.emit("about_tribes");

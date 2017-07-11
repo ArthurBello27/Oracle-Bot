@@ -122,6 +122,14 @@ io.sockets.on('connection', function (socket) {
           socket.emit('server_response', {response: "All merchants will have BOTs "});
           chooser(selector)
         }
+        else if (data.entities.intent[0].value == "habari_info"){
+          socket.emit('server_response', {response: "Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
+          chooser(selector)
+        }
+        else if (data.entities.intent[0].value == "habari_benefits"){
+          socket.emit('server_response', {response: "<ul><li>Discount on all merchant deals</li></ul>", reason: "hb"});
+          chooser(selector)
+        }
         else if (data.entities.intent[0].value == "merchant_tribe_post_info"){
           socket.emit('server_response', {response: "Merchant and Verified tribes’ posts are controlled, only an admin can post in these tribes. Followers can only like, share, comment and or buy posts. While ‘clan - tribe’ tribes have the option to enable or disable post by tribe members."});
           chooser(selector)
