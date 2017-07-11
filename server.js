@@ -29,6 +29,7 @@ app.use(express.static(path.join(__dirname, "./static")));
 // set the views folder and set up ejs
 app.set('views', path.join(__dirname, './views'));
 app.set('view engine', 'ejs');
+app.use( express.static( "public" ) );
 // root route
 app.get('/', function(req, res) {
  res.render('indexpage');
