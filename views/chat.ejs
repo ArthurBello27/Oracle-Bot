@@ -19,7 +19,9 @@
                 border-radius: 20px;
         }
         h3 {
-            background-color: #3c353d;
+            background: #FF512F;
+            background: -webkit-linear-gradient(to right, #DD2476, #FF512F);
+            background: linear-gradient(to right, #DD2476, #FF512F);
             -webkit-margin-before: 0em;
             -webkit-margin-after: 0em;
             font-family: 'Lato';
@@ -30,7 +32,7 @@
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
             padding-top: 10px;
-
+            text-align: center;
         }
         input {
             position: absolute;
@@ -50,7 +52,7 @@
             margin: 10px;
         }
         .chatbotspan {
-                background: dimgrey;
+                background: palevioletred;
                 color: white;
                 padding: 10px;
                 border-radius: 5px;
@@ -69,7 +71,7 @@
             color: white;
             padding: 10px;
             border-radius: 5px;
-            font-family: sans-serif;
+            font-family: 'Lato';
             max-width: 55%;
             text-align: left;
             display: inline-block;
@@ -82,10 +84,10 @@
             color: white;
             padding: 10px 20px 10px 20px;
             border: none;
-            font-family: 'Lato';
+            font-family: sans-serif;
             border-radius: 7px;
             width: 60%;
-            background: linear-gradient(to right, rgba(0,0,0,0.78) 0%, rgba(9,9,10,0.85) 7%, rgba(30,15,25,0.99) 21%, rgba(66,25,50,0.99) 45%, rgba(46,46,54,1) 100%);
+            background: tomato;
             margin-top: 10px;
         }
         #go {
@@ -156,7 +158,14 @@
             <button class="action" id="vilages_info">How are villages made</button>
         </div>
         <input placeholder="Send a message" type="text">
-        <button id="go">GO!</button>
+        <button id="go">
+            <svg fill="white" version="1.1" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 512 512">
+            <title></title>
+            <g id="icomoon-ignore">
+            </g>
+            <path d="M288 124.186v-124.186l192 192-192 192v-126.912c-223.375-5.241-213.794 151.896-156.93 254.912-140.356-151.707-110.55-394.785 156.93-387.814z"></path>
+            </svg>
+        </button>
     </div>
     <!-- web page goes here -->
 </body>
