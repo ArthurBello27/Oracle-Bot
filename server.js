@@ -92,13 +92,13 @@ var io = require('socket.io').listen(server)
 io.sockets.on('connection', function (socket) {
   function chooser(selector){
     if(selector==1){
-      setTimeout(function () {socket.emit('server_response', {response: "Feel free to ask any more questions "+user});}, 2000);
+      setTimeout(function () {socket.emit('server_response', {response: "Feel free to ask any more questions."});}, 2000);
     }
     else if(selector == 2){
       setTimeout(function () {socket.emit('server_response', {response: "More questions? Feel free to ask."});}, 2000);
     }
     else {
-      setTimeout(function () {socket.emit('server_response', {response: "You can still ask more questions "+user});}, 2000);
+      setTimeout(function () {socket.emit('server_response', {response: "You can still ask more questions."});}, 2000);
     }
   }
   console.log("WE ARE USING SOCKETS!");
@@ -106,55 +106,119 @@ io.sockets.on('connection', function (socket) {
   socket.on("about_tribes", function (data){
     socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
   })
+  socket.on("habari_info", function (data){
+    socket.emit('server_response', {response: "Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
+  })
+  // socket.on("about_tribes", function (data){
+  //   socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
+  // })
+  // socket.on("about_tribes", function (data){
+  //   socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
+  // })
   socket.on("user_sent", function (data){
     var selector = getRandomInt(0,3);
     client.message(data.reason, {})
     .then((data) => {
       console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
-      if (Object.keys(data.entities) == "greetings"){
-        socket.emit('server_response', {response: "What do you need help with?"});
+      if (Object.size(data.entities) >= 2){
+        console.log('Multiple items received ' + Object.keys(data.entities));
+        socket.emit('didyoumean', {response: "<p class='chatbot'><span class='chatbotspan'>I didn't quite get that. Did you mean.</span><button style='display: block;'>hello</button></p>"});
       }
-      else if (Object.size(data.entities) === 0){
-        socket.emit('server_response', {response: "I didn't quite get that. Try rephrasing your question."});
-      }
-      else if(Object.keys(data.entities) == "intent"){
-        if (data.entities.intent[0].value == "merchant_bot_info"){
-          socket.emit('server_response', {response: "All merchants will have BOTs "});
-          chooser(selector)
+      else {
+          if (Object.keys(data.entities) == "greetings"){
+            socket.emit('server_response', {response: "What do you need help with?"});
+          }
+          else if (Object.size(data.entities) === 0){
+            socket.emit('didyoumean', {response: "<p class='chatbot'><span class='chatbotspan'>I didn't quite get that. Did you mean.</span><button style='display: block;'>hello</button></p>"});
+          }
+          else if(Object.keys(data.entities) == "intent"){
+            if (data.entities.intent[0].value == "merchant_bot_info"){
+              socket.emit('server_response', {response: "All merchants will have BOTs "});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "village_definition"){
+              socket.emit('server_response', {response: "A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "clan_definition"){
+              socket.emit('server_response', {response: "Clans are private groups created by users. When creating a clan (group), the admin of the clan must specify a unique name and clan category which cannot be changed"});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "tribe_categories"){
+              socket.emit('server_response', {response: "There are currently 13 categories in Habari: Fashion, Health & Fitness, Books, Science, Travel, Sports, News, Politics, DIY(Do It Yourself), Music, Technology, Food & Movies/TV"});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "name_change_info"){
+              socket.emit('server_response', {response: "A user cannot change clan name, username, tribe name or village name and certain names are reserved for featured tribes /merchants so users cannot use them during registration e.g. Shoprite, Slot, Guardian News etc."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "verified_tribe"){
+              socket.emit('server_response', {response: "A verified tribe is a tribe that is internally managed by Habari."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "featured_tribe"){
+              socket.emit('server_response', {response: "Featured tribes are tribes for selected merchants to advertise their products and services. Merchants will pay to be featured as tribes. These merchants can post offers on discounted products also called deals and general information about goods and services offered. Non-profit organization and charities can also be Featured tribes and all Habari users will be allowed to make donations on their pages."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "who_can_use_habari"){
+              socket.emit('server_response', {response: "Anyone 13 and above can use Habari"});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "clan-tribe_tribe"){
+              socket.emit('server_response', {response: "A clan becomes a tribe after it attains X+ number of members and goes public. Whenever a clan attains the tribe status, members of the parent tribe they fall under will be notified of the change and asked if they’ll like to be part of the new tribe"});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "tribe_definition"){
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px' src='//res.cloudinary.com/ltrzxluwr/image/upload/v1500017994/habari_tribe_unpqim.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "tribe_types"){
+              socket.emit('server_response', {response: "There are 3 types of tribes: verified tribes, 'clan-tribe' tribes and featured tribes."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "habari_info"){
+              socket.emit('server_response', {response: "Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "habari_benefits"){
+              socket.emit('server_response', {response: "<ul><li>Habari offers a wide range of benefits such as: <br>Discounts on all merchant deals</li><li>Rewards with Habari Gold Coins and no charges for transactions on Habari</li><li>Individual and business marketing</li><li>Fun and engaging one stop platform for socializing, ecommerce, gaming, business and news. </li> </ul>", reason: "hb"});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "merchant_tribe_post_info"){
+              socket.emit('server_response', {response: "Merchant and Verified tribes’ posts are controlled, only an admin can post in these tribes. Followers can only like, share, comment and or buy posts. While ‘clan - tribe’ tribes have the option to enable or disable post by tribe members."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "existing_name_tribe_creation_info"){
+              socket.emit('server_response', {response: "A tribe can be created by Habari Admin and, existing clans with X number of active members can rise to become a tribe."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "habari_functions"){
+              socket.emit('server_response', {response: "Habari's core functions are individual/corporate bloging, video/audio chatting, music listening, requesting/sending money & purchasing discounted items "});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "multiple_device_info"){
+              socket.emit('server_response', {response: "Multiple device login will be allowed with phone number authentication."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "clan_lifespan_info"){
+              socket.emit('server_response', {response: "Clans will have expiry dates, after which if there’s no activity and several notifications sent to the admin of the clan, it will be deleted."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "clan_deletion_info"){
+              socket.emit('server_response', {response: "Clans can be deleted by their admin but tribes cannot be deleted."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "clan_creation_info"){
+              socket.emit('server_response', {response: "Users cannot create a clan with an existing clan or tribe name."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "village_tribe_difference_info"){
+              socket.emit('server_response', {response: "A village is a private tribe where members join by invitation unlike a tribe which is public and anyone can join. Going public makes it faster for a transitioned clan to get discovered and grow to have more followers as users can easily search and add themselves to the tribe instead of requesting to be added."});
+              chooser(selector)
+            }
+          }
         }
-        else if (data.entities.intent[0].value == "habari_info"){
-          socket.emit('server_response', {response: "Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
-          chooser(selector)
-        }
-        else if (data.entities.intent[0].value == "habari_benefits"){
-          socket.emit('server_response', {response: "<ul><li>Discount on all merchant deals</li></ul>", reason: "hb"});
-          chooser(selector)
-        }
-        else if (data.entities.intent[0].value == "merchant_tribe_post_info"){
-          socket.emit('server_response', {response: "Merchant and Verified tribes’ posts are controlled, only an admin can post in these tribes. Followers can only like, share, comment and or buy posts. While ‘clan - tribe’ tribes have the option to enable or disable post by tribe members."});
-          chooser(selector)
-        }
-        else if (data.entities.intent[0].value == "tribe_creation_info"){
-          socket.emit('server_response', {response: "A tribe can be created by Habari Admin and, existing clans with X number of active members can rise to become a tribe."});
-          chooser(selector)
-        }
-        else if (data.entities.intent[0].value == "clan_lifespan_info"){
-          socket.emit('server_response', {response: "Clans will have expiry dates, after which if there’s no activity and several notifications sent to the admin of the clan, it will be deleted."});
-          chooser(selector)
-        }
-        else if (data.entities.intent[0].value == "clan_deletion_info"){
-          socket.emit('server_response', {response: "Clans can be deleted by their admin but tribes cannot be deleted."});
-          chooser(selector)
-        }
-        else if (data.entities.intent[0].value == "clan_creation_info"){
-          socket.emit('server_response', {response: "Users cannot create a clan with an existing clan or tribe name."});
-          chooser(selector)
-        }
-        else if (data.entities.intent[0].value == "village_tribe_difference_info"){
-          socket.emit('server_response', {response: "A village is a private tribe where members join by invitation unlike a tribe which is public and anyone can join. Going public makes it faster for a transitioned clan to get discovered and grow to have more followers as users can easily search and add themselves to the tribe instead of requesting to be added."});
-          chooser(selector)
-        }
-      }
+      
     })
     .catch(console.error);
     console.log('Someone clicked a button!  Reason: ' + data.reason);
