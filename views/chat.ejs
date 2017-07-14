@@ -55,6 +55,7 @@
             overflow: auto;
             width: 100%;
             height: 473px;
+            background: whitesmoke;
         }
         
         .chatbot {
@@ -62,7 +63,7 @@
             margin: 10px;
         }
         .chatbotspan {
-                background: silver;
+                background: white;
                 color: black;
                 padding: 10px;
                 border-radius: 5px;
@@ -86,7 +87,7 @@
                 margin: 10px;
         }
         li {
-                background: silver;
+                background: white;
                 display: inline-block;
                 color: black;
                 padding: 10px;
@@ -181,6 +182,7 @@
                 }
                 });
                 socket.on('didyoumean', function (data) {
+                    $('button').prop('disabled', false);
                     $('#content').append(data.response);
                     $('#loading').remove();
                     objDiv.scrollTop = objDiv.scrollHeight; 

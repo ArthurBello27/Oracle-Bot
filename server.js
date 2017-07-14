@@ -122,14 +122,14 @@ io.sockets.on('connection', function (socket) {
       console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
       if (Object.size(data.entities) >= 2){
         console.log('Multiple items received ' + Object.keys(data.entities));
-        socket.emit('didyoumean', {response: "<p class='chatbot'><span class='chatbotspan'>I didn't quite get that. Did you mean.</span><button style='display: block;'>hello</button></p>"});
+        socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean.</p><button style='display: block;'>hello</button></div>"});
       }
       else {
           if (Object.keys(data.entities) == "greetings"){
-            socket.emit('server_response', {response: "What do you need help with?"});
+            socket.emit('server_response', {response: "Hello, What do you need help with?"});
           }
           else if (Object.size(data.entities) === 0){
-            socket.emit('didyoumean', {response: "<p class='chatbot'><span class='chatbotspan'>I didn't quite get that. Did you mean.</span><button style='display: block;'>hello</button></p>"});
+            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. You can ask questions like</p><button style='display: block;'>hello</button></div>"});
           }
           else if(Object.keys(data.entities) == "intent"){
             if (data.entities.intent[0].value == "merchant_bot_info"){
@@ -137,7 +137,11 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "village_definition"){
-              socket.emit('server_response', {response: "A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px' src='//res.cloudinary.com/ltrzxluwr/image/upload/v1500030249/habari_village_latwlj.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
+              chooser(selector)
+            }
+            else if (data.entities.intent[0].value == "village_types"){
+              socket.emit('server_response', {response: "There are no specific types of villages."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "clan_definition"){
