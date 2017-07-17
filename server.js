@@ -282,7 +282,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_definition"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_tribe.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_tribe.png'></span><br>That's a Tribe! Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_types"){
