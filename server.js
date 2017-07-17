@@ -117,10 +117,10 @@ io.sockets.on('connection', function (socket) {
   console.log("WE ARE USING SOCKETS!");
   console.log(socket.id);
   socket.on("about_tribes", function (data){
-    socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
+    socket.emit('server_response', {response: "That's a Tribe! A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
   })
   socket.on("habari_info", function (data){
-    socket.emit('server_response', {response: "Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
+    socket.emit('server_response', {response: "So you want to know about me huh? Well i'm Habari, a virtual platform that connects people with shared interests and enables them to discover new interests. You can interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed for cool stuff! Make monetary transactions and payments from here to your real world contacts and merchants."});
   })
   // socket.on("about_tribes", function (data){
   //   socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
@@ -282,7 +282,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_definition"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_tribe.png'></span><br>That's a Tribe! Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_tribe.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_types"){
