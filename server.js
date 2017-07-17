@@ -246,7 +246,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "village_definition"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_village.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_village.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "village_types"){
@@ -254,7 +254,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "clan_definition"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_clan.png'></span><br>Clans are private groups created by users. When creating a clan (group), the admin of the clan must specify a unique name and clan category which cannot be changed"});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_clan.png'></span><br>Clans are private groups created by users. When creating a clan (group), the admin of the clan must specify a unique name and clan category which cannot be changed"});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_categories"){
@@ -282,7 +282,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_definition"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_tribe.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_tribe.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_types"){
@@ -290,7 +290,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "habari_info"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_logo_colored.png'></span><br>Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_logo_colored.png'></span><br>Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "habari_benefits"){
