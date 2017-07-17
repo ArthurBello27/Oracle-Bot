@@ -49,7 +49,7 @@
         #content {
             overflow: auto;
             width: 100%;
-            height: 85vh;
+            height: 80vh;
             background: whitesmoke;
         }
         
@@ -126,6 +126,10 @@
             background: steelblue;
             margin-top: 10px;
             font-size: 40px;
+            display: inline-block;
+            border-radius: 110px;
+            width: 200px;
+            height: 200px;
         }
         #go {
             background-color: cornflowerblue;
@@ -226,11 +230,12 @@
         <div id="content">
             <div class="chatbot"> <p class="chatbotspan">Hello! My name is Habari. What would you like help with?.</p></div>
             <div class="chatbot"> <p class="chatbotspan">Here are some options to get you started.</p></div>
-            <div id="option_content"></div>
-            <button class="action" id="habari_info">What is Habari?</button><br>
-            <button class="action" id="tribe_info">Tell me about tribes</button><br>
-            <button class="action" id="clan_info">What is a clan?</button><br>
+            <div id="option_content">
+            <button class="action" id="habari_info">What is Habari?</button>
+            <button class="action" id="tribe_info">Tell me about tribes</button>
+            <button class="action" id="clan_info">What is a clan?</button>
             <button class="action" id="vilages_info">How are villages made</button>
+            </div>
         </div>
         <input placeholder="Send a message" type="text">
         <button id="go">
