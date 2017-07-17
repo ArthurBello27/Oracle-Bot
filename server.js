@@ -8,7 +8,7 @@ function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
 //The following keywords are keywords in regards to information on Habari's main criteria
-var keywordsA = ['tribe', 'clan', 'village', 'group', 'kingdom', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
+var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'group', 'groups', 'kingdoms', 'kingdom', 'leaderboards', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
 'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
 
 // var keywordsB = ['sign', 'create', ]
@@ -166,7 +166,9 @@ io.sockets.on('connection', function (socket) {
               // }
             }
             for (i in inccorectWordsArray){
+
               var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
+              console.log("found", array_of_suggestions);
               for (j in array_of_suggestions){
                 for (k in keywordsA){
                   if (array_of_suggestions[j] == keywordsA[k]){
@@ -189,7 +191,7 @@ io.sockets.on('connection', function (socket) {
                   }
                 }
               }
-              else if (dataA.reason.toLowerCase().includes("how")){
+              if (dataA.reason.toLowerCase().includes("how")){
                 for (i in suggestedCorrections){
                   if (suggestedCorrections[i].slice(-1) == "s"){
                     completeSuggestions.push("How are "+ suggestedCorrections[i]);
@@ -202,7 +204,7 @@ io.sockets.on('connection', function (socket) {
                   }
                 }
               }
-              else if (dataA.reason.toLowerCase().includes("when")){
+              if (dataA.reason.toLowerCase().includes("when")){
                 for (i in suggestedCorrections){
                   if (suggestedCorrections[i].slice(-1) == "s"){
                     completeSuggestions.push("When do "+ suggestedCorrections[i]);
@@ -215,7 +217,7 @@ io.sockets.on('connection', function (socket) {
                   }
                 }
               }
-              else if (dataA.reason.toLowerCase().includes("where")){
+              if (dataA.reason.toLowerCase().includes("where")){
                 for (i in suggestedCorrections){
                   if (suggestedCorrections[i].slice(-1) == "s"){
                     completeSuggestions.push("Where are "+ suggestedCorrections[i]);
@@ -228,9 +230,11 @@ io.sockets.on('connection', function (socket) {
                   }
                 }
               }
-              else if (dataA.reason.toLowerCase().includes("who")){
+              if (dataA.reason.toLowerCase().includes("who")){
                 console.log("Suggestion is who");
               }
+              console.log(suggestedCorrections);
+              console.log(inccorectWordsArray);
             console.log(completeSuggestions);
             socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
           }
