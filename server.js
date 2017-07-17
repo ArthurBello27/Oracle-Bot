@@ -4,11 +4,22 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
+function existsInArray(array, item) {
+    return array.indexOf(item.toLowerCase()) > -1;
+}
+//The following keywords are keywords in regards to information on Habari's main criteria
+var keywordsA = ['tribe', 'clan', 'village', 'group', 'kingdom', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
+'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
+
+// var keywordsB = ['sign', 'create', ]
 
 // require the path module
 var path = require("path");
 // require express and create the express app
 var express = require("express");
+var Typo = require("typo-js");
+var dictionary = new Typo("en_US");
+
 // var mongoose = require('mongoose');
 // mongoose.connect('mongodb://localhost/gtchatbot');
 // var UserSchema = new mongoose.Schema({
@@ -78,8 +89,10 @@ app.get('/action/:id', function(req, res) {
 var server = app.listen(process.env.PORT || 8000, function() {
  console.log("listening on port 8000");
 })
+
 const {Wit, log} = require('node-wit');
 const client = new Wit({accessToken: 'UC2FRHQWCW2LRF34ECB2XEE5S7L7ZJNJ'});
+
 Object.size = function(obj) {
   var size = 0, key;
   for (key in obj) {
@@ -115,29 +128,125 @@ io.sockets.on('connection', function (socket) {
   // socket.on("about_tribes", function (data){
   //   socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
   // })
-  socket.on("user_sent", function (data){
+  socket.on("user_sent", function (dataA){
     var selector = getRandomInt(0,3);
-    client.message(data.reason, {})
+
+    client.message("words", {}).then((data) => {
+      console.log(data);
+    })
+
+    client.message(dataA.reason, {})
     .then((data) => {
       console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
       if (Object.size(data.entities) >= 2){
         console.log('Multiple items received ' + Object.keys(data.entities));
-        socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean.</p><button style='display: block;'>hello</button></div>"});
+        socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
       }
       else {
           if (Object.keys(data.entities) == "greetings"){
             socket.emit('server_response', {response: "Hello, What do you need help with?"});
           }
           else if (Object.size(data.entities) === 0){
-            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. You can ask questions like</p><button style='display: block;'>hello</button></div>"});
+            console.log("Zero returned, here's what the user sent", dataA.reason.split(" "));
+            var i;
+            var j;
+            var k;
+            var inccorectWordsArray = [];
+            var suggestedCorrections = [];
+            var completeSuggestions = [];
+            var splitarray = dataA.reason.split(" ")
+            for (i in splitarray){
+              // var array_of_suggestions = dictionary.suggest(i);
+              // console.log(dictionary.check(splitarray[i]));
+              if (dictionary.check(splitarray[i]) == false){
+                inccorectWordsArray.push(splitarray[i])
+              }
+              // var is_spelled_correctly = dictionary.check("vullage");
+              // console.log(is_spelled_correctly);
+              // console.log(array_of_suggestions);
+              // var x;
+              // for (x in array_of_suggestions) {
+              //   console.log(existsInArray(keywords, array_of_suggestions[x]));
+              // }
+            }
+            for (i in inccorectWordsArray){
+              var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
+              for (j in array_of_suggestions){
+                for (k in keywordsA){
+                  if (array_of_suggestions[j] == keywordsA[k]){
+                    suggestedCorrections.push(keywordsA[k])
+                  }
+                }
+              }
+              
+            }
+              if (dataA.reason.toLowerCase().includes("what")){
+                for (i in suggestedCorrections){
+                  if (suggestedCorrections[i].slice(-1) == "s"){
+                    completeSuggestions.push("What are "+ suggestedCorrections[i]);
+                  }
+                  else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                    completeSuggestions.push("What is an "+ suggestedCorrections[i]);
+                  }
+                  else {
+                    completeSuggestions.push("What is a "+ suggestedCorrections[i]);
+                  }
+                }
+              }
+              else if (dataA.reason.toLowerCase().includes("how")){
+                for (i in suggestedCorrections){
+                  if (suggestedCorrections[i].slice(-1) == "s"){
+                    completeSuggestions.push("How are "+ suggestedCorrections[i]);
+                  }
+                  else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                    completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made");
+                  }
+                  else {
+                    completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made");
+                  }
+                }
+              }
+              else if (dataA.reason.toLowerCase().includes("when")){
+                for (i in suggestedCorrections){
+                  if (suggestedCorrections[i].slice(-1) == "s"){
+                    completeSuggestions.push("When do "+ suggestedCorrections[i]);
+                  }
+                  else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                    completeSuggestions.push("When does an "+ suggestedCorrections[i]);
+                  }
+                  else {
+                    completeSuggestions.push("When does a "+ suggestedCorrections[i]);
+                  }
+                }
+              }
+              else if (dataA.reason.toLowerCase().includes("where")){
+                for (i in suggestedCorrections){
+                  if (suggestedCorrections[i].slice(-1) == "s"){
+                    completeSuggestions.push("Where are "+ suggestedCorrections[i]);
+                  }
+                  else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                    completeSuggestions.push("Where is an "+ suggestedCorrections[i]);
+                  }
+                  else {
+                    completeSuggestions.push("Where is a "+ suggestedCorrections[i]);
+                  }
+                }
+              }
+              else if (dataA.reason.toLowerCase().includes("who")){
+                console.log("Suggestion is who");
+              }
+            console.log(completeSuggestions);
+            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
           }
           else if(Object.keys(data.entities) == "intent"){
             if (data.entities.intent[0].value == "merchant_bot_info"){
+
+
               socket.emit('server_response', {response: "All merchants will have BOTs "});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "village_definition"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px' src='//res.cloudinary.com/ltrzxluwr/image/upload/v1500030249/habari_village_latwlj.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_village.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "village_types"){
@@ -145,7 +254,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "clan_definition"){
-              socket.emit('server_response', {response: "Clans are private groups created by users. When creating a clan (group), the admin of the clan must specify a unique name and clan category which cannot be changed"});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_clan.png'></span><br>Clans are private groups created by users. When creating a clan (group), the admin of the clan must specify a unique name and clan category which cannot be changed"});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_categories"){
@@ -173,7 +282,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_definition"){
-              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px' src='//res.cloudinary.com/ltrzxluwr/image/upload/v1500017994/habari_tribe_unpqim.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_tribe.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "tribe_types"){
@@ -181,7 +290,7 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "habari_info"){
-              socket.emit('server_response', {response: "Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
+              socket.emit('server_response', {response: "<span class='img_span'><img style='width: 80px; margin-bottom: 8px' src='habari_logo_colored.png'></span><br>Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
               chooser(selector)
             }
             else if (data.entities.intent[0].value == "habari_benefits"){
@@ -192,7 +301,7 @@ io.sockets.on('connection', function (socket) {
               socket.emit('server_response', {response: "Merchant and Verified tribes’ posts are controlled, only an admin can post in these tribes. Followers can only like, share, comment and or buy posts. While ‘clan - tribe’ tribes have the option to enable or disable post by tribe members."});
               chooser(selector)
             }
-            else if (data.entities.intent[0].value == "existing_name_tribe_creation_info"){
+            else if (data.entities.intent[0].value == "who_can_create_tribes"){
               socket.emit('server_response', {response: "A tribe can be created by Habari Admin and, existing clans with X number of active members can rise to become a tribe."});
               chooser(selector)
             }
@@ -225,7 +334,6 @@ io.sockets.on('connection', function (socket) {
       
     })
     .catch(console.error);
-    console.log('Someone clicked a button!  Reason: ' + data.reason);
     
 })
 })
