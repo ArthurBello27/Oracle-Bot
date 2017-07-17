@@ -131,10 +131,6 @@ io.sockets.on('connection', function (socket) {
   socket.on("user_sent", function (dataA){
     var selector = getRandomInt(0,3);
 
-    client.message("words", {}).then((data) => {
-      console.log(data);
-    })
-
     client.message(dataA.reason, {})
     .then((data) => {
       console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
