@@ -268,7 +268,7 @@ io.sockets.on('connection', function (socket) {
                 else{
                   var holder = "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p><br>"
                   for (i in completeSuggestions){
-                    holder += "<button class='responseButton' style='background: maroon;color: white;padding: 10px 15px 10px 15px;border-radius: 10px;border:none;'>"+completeSuggestions[i]+"</button><br>"
+                    holder += "<button class='responseButton' style='font-size: 25px;background: maroon;color: white;padding: 10px 15px 10px 15px;border-radius: 10px;border:none;'>"+completeSuggestions[i]+"</button><br>"
                   }
                   socket.emit('didyoumean', {response:   holder+"</div>"});
                 }
