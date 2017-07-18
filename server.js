@@ -13,7 +13,7 @@ var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'gro
 
 //This list of words below is a list of words that will be checked by the bot in order to check politeness. More words
 //will most likely be added
-var abuseWords = ['fuck', 'bitch', 'ass', 'whore', 'motherfucker', 'fucker', 'dick', ]
+//var abuseWords = ['fuck', 'bitch', 'ass', 'whore', 'motherfucker', 'fucker', 'dick', ]
 
 
 // require the path module
@@ -149,47 +149,40 @@ io.sockets.on('connection', function (socket) {
             socket.emit('server_response', {response: "Hello, What do you need help with?"});
           }
           else if (Object.size(data.entities) === 0){
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-              if (this.readyState == 4 && this.status == 200) {
-                console.log(this);
-                socket.emit('server_response', {response: this.responseText});
-              }
-              else if (this.readyState == 4 && this.status != 200) {
-                    var i;
-                var j;
-                var k;
-                var inccorectWordsArray = [];
-                var suggestedCorrections = [];
-                var completeSuggestions = [];
-                var splitarray = dataA.reason.split(" ")
-                for (i in splitarray){
-                  // var array_of_suggestions = dictionary.suggest(i);
-                  // console.log(dictionary.check(splitarray[i]));
-                  if (dictionary.check(splitarray[i]) == false){
-                    inccorectWordsArray.push(splitarray[i])
+              var i;
+                  var j;
+                  var k;
+                  var inccorectWordsArray = [];
+                  var suggestedCorrections = [];
+                  var completeSuggestions = [];
+                  var splitarray = dataA.reason.split(" ")
+                  for (i in splitarray){
+                    // var array_of_suggestions = dictionary.suggest(i);
+                    // console.log(dictionary.check(splitarray[i]));
+                    if (dictionary.check(splitarray[i]) == false){
+                      inccorectWordsArray.push(splitarray[i])
+                    }
+                    // var is_spelled_correctly = dictionary.check("vullage");
+                    // console.log(is_spelled_correctly);
+                    // console.log(array_of_suggestions);
+                    // var x;
+                    // for (x in array_of_suggestions) {
+                    //   console.log(existsInArray(keywords, array_of_suggestions[x]));
+                    // }
                   }
-                  // var is_spelled_correctly = dictionary.check("vullage");
-                  // console.log(is_spelled_correctly);
-                  // console.log(array_of_suggestions);
-                  // var x;
-                  // for (x in array_of_suggestions) {
-                  //   console.log(existsInArray(keywords, array_of_suggestions[x]));
-                  // }
-                }
-                for (i in inccorectWordsArray){
+                  for (i in inccorectWordsArray){
 
-                  var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
-                  console.log("found", array_of_suggestions);
-                  for (j in array_of_suggestions){
-                    for (k in keywordsA){
-                      if (array_of_suggestions[j] == keywordsA[k]){
-                        suggestedCorrections.push(keywordsA[k])
+                    var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
+                    console.log("found", array_of_suggestions);
+                    for (j in array_of_suggestions){
+                      for (k in keywordsA){
+                        if (array_of_suggestions[j] == keywordsA[k]){
+                          suggestedCorrections.push(keywordsA[k])
+                        }
                       }
                     }
+                    
                   }
-                  
-                }
                   if (dataA.reason.toLowerCase().includes("what")){
                     for (i in suggestedCorrections){
                       if (suggestedCorrections[i].slice(-1) == "s"){
@@ -242,22 +235,66 @@ io.sockets.on('connection', function (socket) {
                       }
                     }
                   }
-                  if (dataA.reason.toLowerCase().includes("who")){
-                    console.log("Suggestion is who");
+                  if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where") && (suggestedCorrections[0] == "village" || suggestedCorrections[0] == "villages" || suggestedCorrections[0] == "tribe" || suggestedCorrections[0] == "tribes" || suggestedCorrections[0] == "clan" || suggestedCorrections[0] == "clans" || suggestedCorrections[0] == "group" || suggestedCorrections[0] == "groups")){
+                    for (i in suggestedCorrections){
+                      if (suggestedCorrections[i].slice(-1) == "s"){
+                        completeSuggestions.push("What are "+ suggestedCorrections[i]);
+                      }
+                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                        completeSuggestions.push("What is an "+ suggestedCorrections[i]);
+                      }
+                      else {
+                        completeSuggestions.push("What is a "+ suggestedCorrections[i]);
+                      }
+                    }
+                    for (i in suggestedCorrections){
+                      if (suggestedCorrections[i].slice(-1) == "s"){
+                        completeSuggestions.push("How are "+ suggestedCorrections[i]);
+                      }
+                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                        completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made");
+                      }
+                      else {
+                        completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made");
+                      }
+                    }
                   }
+                  else if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where")){
+                    for (i in suggestedCorrections){
+                      if (suggestedCorrections[i].slice(-1) == "s"){
+                        completeSuggestions.push("What are "+ suggestedCorrections[i]);
+                      }
+                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                        completeSuggestions.push("What is an "+ suggestedCorrections[i]);
+                      }
+                      else {
+                        completeSuggestions.push("What is a "+ suggestedCorrections[i]);
+                      }
+                    }
+                  }
+                
+
                   console.log(suggestedCorrections);
                   console.log(inccorectWordsArray);
                 console.log("Completed Suggestions", completeSuggestions);
                 if (completeSuggestions.length == 0){
-                socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I'm sorry. I don't think I can answer that, but try asking anything else &#128077;.</p></div>"});
+                  var xhttp = new XMLHttpRequest();
+                  xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                      console.log(this);
+                      socket.emit('server_response', {response: this.responseText});
+                    }
+                    else if (this.readyState == 4 && this.status != 200) {
+                      socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I'm sorry. I don't think I can answer that, but try asking anything else &#128077;.</p></div>"});
+                    }
+                  };
+                xhttp.open("GET", "http://api.wolframalpha.com/v1/result?appid=8TL836-JTYAY4L5JE&i="+encodeURIComponent(dataA.reason).split("%20").join("+"), true);
+                xhttp.send();
                 }
                 else{
                   socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
                 }
-              }
-            };
-            xhttp.open("GET", "http://api.wolframalpha.com/v1/result?appid=8TL836-JTYAY4L5JE&i="+encodeURIComponent(dataA.reason).split("%20").join("+"), true);
-            xhttp.send();
+              
             
           }
           else if(Object.keys(data.entities) == "intent"){
