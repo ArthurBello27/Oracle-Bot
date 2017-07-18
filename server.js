@@ -120,7 +120,6 @@ io.sockets.on('connection', function (socket) {
       setTimeout(function () {socket.emit('server_response', {response: "You can still ask more questions."});}, 2000);
     }
   }
-  console.log("WE ARE USING SOCKETS!");
   console.log(socket.id);
   socket.on("about_tribes", function (data){
     socket.emit('server_response', {response: "That's a Tribe! A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
@@ -140,13 +139,44 @@ io.sockets.on('connection', function (socket) {
     client.message(dataA.reason, {})
     .then((data) => {
       // console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
-      if (Object.size(data.entities) >= 2){
-        console.log('Multiple items received ' + Object.keys(data.entities));
-        socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
-      }
-      else {
+      // if (Object.size(data.entities) >= 2){
+      //   console.log('Multiple items received ' + Object.keys(data.entities));
+      //   socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
+      // }
+      // else {
+          if (Object.size(data.entities) >= 2){ 
+          }
           if (Object.keys(data.entities) == "greetings"){
             socket.emit('server_response', {response: "Hello, What do you need help with?"});
+          }
+          else if('oracle_info' in data.entities){
+            if (data.entities.oracle_info[0].value == "name") {
+              socket.emit('server_response', {response: "My name is Habari"});
+            }
+          }
+          else if ('friendly_question' in data.entities ){
+              if (data.entities.friendly_question[0].value == "true_regarding_your_day") {
+                socket.emit('server_response', {response: "My day is wonderful as ever&#127775"});
+              }
+              else{
+                var selector2 = getRandomInt(0,5);
+                if (selector2 == 1){
+                  socket.emit('server_response', {response: "I'm pretty good, thanks&#128513"});
+                }
+                else if (selector2 == 2){
+                  socket.emit('server_response', {response: "I feel great today, thanks for asking&#128524"});
+                }
+                else if (selector2 == 3){
+                  socket.emit('server_response', {response: "I feel quite awesome today, thanks you&#128513"});
+                }
+                else if (selector2 == 4){
+                  socket.emit('server_response', {response: "I'm &#128175, thanks for asking&#128524"});
+                }
+                else {
+                  socket.emit('server_response', {response: "I'm all smiles as usual, thanks for asking&#128513"});
+                }
+              }
+
           }
           else if (Object.size(data.entities) === 0){
               var i;
@@ -212,24 +242,24 @@ io.sockets.on('connection', function (socket) {
                   if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where") && (suggestedCorrections[0] == "village" || suggestedCorrections[0] == "villages" || suggestedCorrections[0] == "tribe" || suggestedCorrections[0] == "tribes" || suggestedCorrections[0] == "clan" || suggestedCorrections[0] == "clans" || suggestedCorrections[0] == "group" || suggestedCorrections[0] == "groups")){
                     for (i in suggestedCorrections){
                       if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("What are "+ suggestedCorrections[i]);
+                        completeSuggestions.push("What are "+ suggestedCorrections[i]+"?");
                       }
                       else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("What is an "+ suggestedCorrections[i]);
+                        completeSuggestions.push("What is an "+ suggestedCorrections[i]+"?");
                       }
                       else {
-                        completeSuggestions.push("What is a "+ suggestedCorrections[i]);
+                        completeSuggestions.push("What is a "+ suggestedCorrections[i]+"?");
                       }
                     }
                     for (i in suggestedCorrections){
                       if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("How are "+ suggestedCorrections[i]);
+                        completeSuggestions.push("How are "+ suggestedCorrections[i] +"made?");
                       }
                       else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made");
+                        completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made?");
                       }
                       else {
-                        completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made");
+                        completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made?");
                       }
                     }
                   }
@@ -268,7 +298,7 @@ io.sockets.on('connection', function (socket) {
                 else{
                   var holder = "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p><br>"
                   for (i in completeSuggestions){
-                    holder += "<button class='responseButton' style='font-size: 30px; font-family: \"Lato\"; background: maroon;color: white;padding: 10px 15px 10px 15px;border-radius: 10px;border:none;'>"+completeSuggestions[i]+"</button><br>"
+                    holder += "<button class='responseButton' style='font-size: 30px; font-family: \"Lato\"; background: cornflowerblue;color: white;padding: 10px 15px 10px 15px;border-radius: 10px;border:none;'>"+completeSuggestions[i]+"</button><br>"
                   }
                   socket.emit('didyoumean', {response:   holder+"</div>"});
                 }
@@ -367,7 +397,6 @@ io.sockets.on('connection', function (socket) {
               chooser(selector)
             }
           }
-        }
       
     })
     .catch(console.error);
