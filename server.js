@@ -176,7 +176,7 @@ io.sockets.on('connection', function (socket) {
                     console.log("found", array_of_suggestions);
                     for (j in array_of_suggestions){
                       for (k in keywordsA){
-                        if (array_of_suggestions[j] == keywordsA[k]){
+                        if (array_of_suggestions[j].toLowerCase() == keywordsA[k]){
                           suggestedCorrections.push(keywordsA[k])
                         }
                       }
