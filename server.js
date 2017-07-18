@@ -11,7 +11,10 @@ function existsInArray(array, item) {
 var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'group', 'groups', 'kingdoms', 'kingdom', 'leaderboards', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
 'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
 
-// var keywordsB = ['sign', 'create', ]
+//This list of words below is a list of words that will be checked by the bot in order to check politeness. More words
+//will most likely be added
+var abuseWords = ['fuck', 'bitch', 'ass', 'whore', 'motherfucker', 'fucker', 'dick', ]
+
 
 // require the path module
 var path = require("path");
@@ -149,107 +152,113 @@ io.sockets.on('connection', function (socket) {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
               if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText);
+                console.log(this);
                 socket.emit('server_response', {response: this.responseText});
+              }
+              else if (this.readyState == 4 && this.status != 200) {
+                    var i;
+                var j;
+                var k;
+                var inccorectWordsArray = [];
+                var suggestedCorrections = [];
+                var completeSuggestions = [];
+                var splitarray = dataA.reason.split(" ")
+                for (i in splitarray){
+                  // var array_of_suggestions = dictionary.suggest(i);
+                  // console.log(dictionary.check(splitarray[i]));
+                  if (dictionary.check(splitarray[i]) == false){
+                    inccorectWordsArray.push(splitarray[i])
+                  }
+                  // var is_spelled_correctly = dictionary.check("vullage");
+                  // console.log(is_spelled_correctly);
+                  // console.log(array_of_suggestions);
+                  // var x;
+                  // for (x in array_of_suggestions) {
+                  //   console.log(existsInArray(keywords, array_of_suggestions[x]));
+                  // }
+                }
+                for (i in inccorectWordsArray){
+
+                  var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
+                  console.log("found", array_of_suggestions);
+                  for (j in array_of_suggestions){
+                    for (k in keywordsA){
+                      if (array_of_suggestions[j] == keywordsA[k]){
+                        suggestedCorrections.push(keywordsA[k])
+                      }
+                    }
+                  }
+                  
+                }
+                  if (dataA.reason.toLowerCase().includes("what")){
+                    for (i in suggestedCorrections){
+                      if (suggestedCorrections[i].slice(-1) == "s"){
+                        completeSuggestions.push("What are "+ suggestedCorrections[i]);
+                      }
+                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                        completeSuggestions.push("What is an "+ suggestedCorrections[i]);
+                      }
+                      else {
+                        completeSuggestions.push("What is a "+ suggestedCorrections[i]);
+                      }
+                    }
+                  }
+                  if (dataA.reason.toLowerCase().includes("how")){
+                    for (i in suggestedCorrections){
+                      if (suggestedCorrections[i].slice(-1) == "s"){
+                        completeSuggestions.push("How are "+ suggestedCorrections[i]);
+                      }
+                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                        completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made");
+                      }
+                      else {
+                        completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made");
+                      }
+                    }
+                  }
+                  if (dataA.reason.toLowerCase().includes("when")){
+                    for (i in suggestedCorrections){
+                      if (suggestedCorrections[i].slice(-1) == "s"){
+                        completeSuggestions.push("When do "+ suggestedCorrections[i]);
+                      }
+                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                        completeSuggestions.push("When does an "+ suggestedCorrections[i]);
+                      }
+                      else {
+                        completeSuggestions.push("When does a "+ suggestedCorrections[i]);
+                      }
+                    }
+                  }
+                  if (dataA.reason.toLowerCase().includes("where")){
+                    for (i in suggestedCorrections){
+                      if (suggestedCorrections[i].slice(-1) == "s"){
+                        completeSuggestions.push("Where are "+ suggestedCorrections[i]);
+                      }
+                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                        completeSuggestions.push("Where is an "+ suggestedCorrections[i]);
+                      }
+                      else {
+                        completeSuggestions.push("Where is a "+ suggestedCorrections[i]);
+                      }
+                    }
+                  }
+                  if (dataA.reason.toLowerCase().includes("who")){
+                    console.log("Suggestion is who");
+                  }
+                  console.log(suggestedCorrections);
+                  console.log(inccorectWordsArray);
+                console.log("Completed Suggestions", completeSuggestions);
+                if (completeSuggestions.length == 0){
+                socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I'm sorry. I don't think I can answer that, but try asking anything else &#128077;.</p></div>"});
+                }
+                else{
+                  socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
+                }
               }
             };
             xhttp.open("GET", "http://api.wolframalpha.com/v1/result?appid=8TL836-JTYAY4L5JE&i="+encodeURIComponent(dataA.reason).split("%20").join("+"), true);
             xhttp.send();
-            //All this must still be used
-            // console.log("Zero returned, here's what the user sent", dataA.reason.split(" "));
-            // var i;
-            // var j;
-            // var k;
-            // var inccorectWordsArray = [];
-            // var suggestedCorrections = [];
-            // var completeSuggestions = [];
-            // var splitarray = dataA.reason.split(" ")
-            // for (i in splitarray){
-            //   // var array_of_suggestions = dictionary.suggest(i);
-            //   // console.log(dictionary.check(splitarray[i]));
-            //   if (dictionary.check(splitarray[i]) == false){
-            //     inccorectWordsArray.push(splitarray[i])
-            //   }
-            //   // var is_spelled_correctly = dictionary.check("vullage");
-            //   // console.log(is_spelled_correctly);
-            //   // console.log(array_of_suggestions);
-            //   // var x;
-            //   // for (x in array_of_suggestions) {
-            //   //   console.log(existsInArray(keywords, array_of_suggestions[x]));
-            //   // }
-            // }
-            // for (i in inccorectWordsArray){
-
-            //   var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
-            //   console.log("found", array_of_suggestions);
-            //   for (j in array_of_suggestions){
-            //     for (k in keywordsA){
-            //       if (array_of_suggestions[j] == keywordsA[k]){
-            //         suggestedCorrections.push(keywordsA[k])
-            //       }
-            //     }
-            //   }
-              
-            // }
-            //   if (dataA.reason.toLowerCase().includes("what")){
-            //     for (i in suggestedCorrections){
-            //       if (suggestedCorrections[i].slice(-1) == "s"){
-            //         completeSuggestions.push("What are "+ suggestedCorrections[i]);
-            //       }
-            //       else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-            //         completeSuggestions.push("What is an "+ suggestedCorrections[i]);
-            //       }
-            //       else {
-            //         completeSuggestions.push("What is a "+ suggestedCorrections[i]);
-            //       }
-            //     }
-            //   }
-            //   if (dataA.reason.toLowerCase().includes("how")){
-            //     for (i in suggestedCorrections){
-            //       if (suggestedCorrections[i].slice(-1) == "s"){
-            //         completeSuggestions.push("How are "+ suggestedCorrections[i]);
-            //       }
-            //       else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-            //         completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made");
-            //       }
-            //       else {
-            //         completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made");
-            //       }
-            //     }
-            //   }
-            //   if (dataA.reason.toLowerCase().includes("when")){
-            //     for (i in suggestedCorrections){
-            //       if (suggestedCorrections[i].slice(-1) == "s"){
-            //         completeSuggestions.push("When do "+ suggestedCorrections[i]);
-            //       }
-            //       else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-            //         completeSuggestions.push("When does an "+ suggestedCorrections[i]);
-            //       }
-            //       else {
-            //         completeSuggestions.push("When does a "+ suggestedCorrections[i]);
-            //       }
-            //     }
-            //   }
-            //   if (dataA.reason.toLowerCase().includes("where")){
-            //     for (i in suggestedCorrections){
-            //       if (suggestedCorrections[i].slice(-1) == "s"){
-            //         completeSuggestions.push("Where are "+ suggestedCorrections[i]);
-            //       }
-            //       else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-            //         completeSuggestions.push("Where is an "+ suggestedCorrections[i]);
-            //       }
-            //       else {
-            //         completeSuggestions.push("Where is a "+ suggestedCorrections[i]);
-            //       }
-            //     }
-            //   }
-            //   if (dataA.reason.toLowerCase().includes("who")){
-            //     console.log("Suggestion is who");
-            //   }
-            //   console.log(suggestedCorrections);
-            //   console.log(inccorectWordsArray);
-            // console.log(completeSuggestions);
-            // socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
+            
           }
           else if(Object.keys(data.entities) == "intent"){
             if (data.entities.intent[0].value == "merchant_bot_info"){
