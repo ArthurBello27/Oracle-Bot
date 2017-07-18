@@ -209,32 +209,6 @@ io.sockets.on('connection', function (socket) {
                       }
                     }
                   }
-                  if (dataA.reason.toLowerCase().includes("when")){
-                    for (i in suggestedCorrections){
-                      if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("When do "+ suggestedCorrections[i]);
-                      }
-                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("When does an "+ suggestedCorrections[i]);
-                      }
-                      else {
-                        completeSuggestions.push("When does a "+ suggestedCorrections[i]);
-                      }
-                    }
-                  }
-                  if (dataA.reason.toLowerCase().includes("where")){
-                    for (i in suggestedCorrections){
-                      if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("Where are "+ suggestedCorrections[i]);
-                      }
-                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("Where is an "+ suggestedCorrections[i]);
-                      }
-                      else {
-                        completeSuggestions.push("Where is a "+ suggestedCorrections[i]);
-                      }
-                    }
-                  }
                   if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where") && (suggestedCorrections[0] == "village" || suggestedCorrections[0] == "villages" || suggestedCorrections[0] == "tribe" || suggestedCorrections[0] == "tribes" || suggestedCorrections[0] == "clan" || suggestedCorrections[0] == "clans" || suggestedCorrections[0] == "group" || suggestedCorrections[0] == "groups")){
                     for (i in suggestedCorrections){
                       if (suggestedCorrections[i].slice(-1) == "s"){
@@ -292,7 +266,11 @@ io.sockets.on('connection', function (socket) {
                 xhttp.send();
                 }
                 else{
-                  socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
+                  var holder = "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p><br>"
+                  for (i in completeSuggestions){
+                    holder += "<button class='responseButton' style='background: maroon;color: white;padding: 10px 15px 10px 15px;border-radius: 10px;border:none;'>"+completeSuggestions[i]+"</button><br>"
+                  }
+                  socket.emit('didyoumean', {response:   holder+"</div>"});
                 }
               
             
