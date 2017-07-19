@@ -11,10 +11,6 @@ function existsInArray(array, item) {
 //The following keywords are keywords in regards to information on Habari's main criteria
 var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'group', 'groups', 'kingdoms', 'kingdom', 'leaderboards', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
 'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
-
-//This list of words below is a list of words that will be checked by the bot in order to check politeness. More words
-//will most likely be added
-//var abuseWords = ['fuck', 'bitch', 'ass', 'whore', 'motherfucker', 'fucker', 'dick', ]
 var $ 
 var ip;
 require("node-jsdom").env("", function(err, window) {
@@ -32,20 +28,8 @@ var path = require("path");
 // require express and create the express app
 var express = require("express");
 var Typo = require("typo-js");
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var dictionary = new Typo("en_US");
-
-
-// var mongoose = require('mongoose');
-// mongoose.connect('mongodb://localhost/gtchatbot');
-// var UserSchema = new mongoose.Schema({
-//  name: String,
-//  phone: String,
-//  seventhreesevenstatus: Number,
-//  userid: Number
-// })
-// var User = mongoose.model('User', UserSchema);
 
 var app = express();
 // require bodyParser since we need to handle post data for adding a user
@@ -73,35 +57,6 @@ app.get('/chatInterface', function(req, res) {
 app.get('/action/:id', function(req, res) {
  res.render('action', {id: req.params.id});
 })
-// app.post('/get_user', function (req, res){
-//     console.log('IN get user');
-//     console.log("SENT NUMBER: ", req.body);
-//     User.findOne({phone: req.body.number}, function (err, user){
-//         // loads a view called 'user.ejs' and passed the user object to the view!
-//         console.log(user)
-//         res.writeHead(200, {'content-type': 'text/json' });
-//       	res.write( JSON.stringify(user) );
-//       	res.end('\n');
-
-//         // res.render('user', {user: user});
-//     })
-    
-// })
-// app.post('/make_user', function(req, res) {
-// 	console.log("POST DATA", req.body);
-// 	var user = new User({name: req.body.name, phone: req.body.phone, seventhreesevenstatus: req.body.seventhreesevenstatus, userid: req.body.userid});
-// 	  // try to save that new user to the database (this is the method that actually inserts into the db) and run a callback function with an error (if any) from the operation.
-// 	  user.save(function(err) {
-// 	    // if there is an error console.log that something went wrong!
-// 	    if(err) {
-// 	      console.log('something went wrong');
-// 	    } else { // else console.log that we did well and then redirect to the root route
-// 	      console.log('successfully added a user!');
-// 	      res.redirect('/');
-// 	    }
-// 	  })
-// })
-// listen on 8000
 //process.env.PORT will use the browsers port
 var server = app.listen(process.env.PORT || 8000, function() {
  console.log("listening on port 8000");
@@ -156,13 +111,14 @@ function getweather (day) {
   //   }
   // };
   $.getJSON('http://ipinfo.io', function(dataA){
+    console.log(dataA);
     $.ajax({
-
       type: 'GET',
       dataType: 'json',
       contentType: 'application/json',
       url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&format=json",
       success: function(data) {
+
         var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
         +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but'll feel like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
         +"Weather Description: "+data.data.current_condition[0].weatherDesc[0].value;
@@ -282,18 +238,9 @@ function getweather (day) {
                   var completeSuggestions = [];
                   var splitarray = dataA.reason.split(" ")
                   for (i in splitarray){
-                    // var array_of_suggestions = dictionary.suggest(i);
-                    // console.log(dictionary.check(splitarray[i]));
                     if (dictionary.check(splitarray[i]) == false){
                       inccorectWordsArray.push(splitarray[i])
                     }
-                    // var is_spelled_correctly = dictionary.check("vullage");
-                    // console.log(is_spelled_correctly);
-                    // console.log(array_of_suggestions);
-                    // var x;
-                    // for (x in array_of_suggestions) {
-                    //   console.log(existsInArray(keywords, array_of_suggestions[x]));
-                    // }
                   }
                   for (i in inccorectWordsArray){
 
