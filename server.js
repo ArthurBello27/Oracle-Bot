@@ -161,7 +161,7 @@ function getweather (day) {
       type: 'GET',
       dataType: 'json',
       contentType: 'application/json',
-      url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.ip+"&includelocation=yes&date="+day+"&tp=3&format=json",
+      url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&format=json",
       success: function(data) {
         var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
         +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but'll feel like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
