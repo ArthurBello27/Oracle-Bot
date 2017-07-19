@@ -7,6 +7,7 @@ function getRandomInt(min, max) {
 function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
+
 //The following keywords are keywords in regards to information on Habari's main criteria
 var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'group', 'groups', 'kingdoms', 'kingdom', 'leaderboards', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
 'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
@@ -14,9 +15,19 @@ var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'gro
 //This list of words below is a list of words that will be checked by the bot in order to check politeness. More words
 //will most likely be added
 //var abuseWords = ['fuck', 'bitch', 'ass', 'whore', 'motherfucker', 'fucker', 'dick', ]
+var $ 
+var ip;
+require("node-jsdom").env("", function(err, window) {
+    if (err) {
+        console.error(err);
+        return;
+    }
 
+    $ = require("jquery")(window);
 
+});
 // require the path module
+var weather_flag = false;
 var path = require("path");
 // require express and create the express app
 var express = require("express");
@@ -107,6 +118,7 @@ Object.size = function(obj) {
   return size;
 };
 var user;
+
 var io = require('socket.io').listen(server) 
 io.sockets.on('connection', function (socket) {
   function chooser(selector){
@@ -133,11 +145,59 @@ io.sockets.on('connection', function (socket) {
   // socket.on("about_tribes", function (data){
   //   socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
   // })
+
+function getweather (day) {
+  socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591."});
+  // var xhttp = new XMLHttpRequest();
+  // xhttp.onreadystatechange = function() {
+  //   if (this.readyState == 4 && this.status == 200) {
+  //     console.log( $.parseXML(this.responseText));
+  //     // socket.emit('server_response', {response: this.responseText});
+  //   }
+  // };
+  $.getJSON('http://ipinfo.io', function(dataA){
+    $.ajax({
+
+      type: 'GET',
+      dataType: 'json',
+      contentType: 'application/json',
+      url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.ip+"&includelocation=yes&date="+day+"&tp=3&format=json",
+      success: function(data) {
+        var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
+        +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but'll feel like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
+        +"Weather Description: "+data.data.current_condition[0].weatherDesc[0].value;
+        socket.emit('server_response', {response: weather_response});
+      }
+
+    });
+});
+    // $.get("//ipinfo.io", function(response) {
+    //   console.log("whuttt", response.ip);
+    //   $.ajax({
+
+    //     type: 'GET',
+    //     dataType: 'json',
+    //     contentType: 'application/json',
+    //     url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+response.ip+"&includelocation=yes&date="+day+"&tp=3&format=json",
+    //     success: function(data) {
+    //       console.log(JSON.stringify(data))
+    //       var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day;
+    //       socket.emit('server_response', {response: weather_response});
+    //     }
+
+    //   });
+    // }, "jsonp");
+// console.log($);
+  // console.log(jq.getJSON("http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q=6.45,3.39&includelocation=yes&date="+day+"&tp=3&format=json"));
+  // xhttp.open("GET", "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q=6.45,3.39&includelocation=yes&date="+day+"&tp=3&format=xml", true);
+  // xhttp.send();
+}
   socket.on("user_sent", function (dataA){
     var selector = getRandomInt(0,3);
 
     client.message(dataA.reason, {})
     .then((data) => {
+      
       // console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
       // if (Object.size(data.entities) >= 2){
       //   console.log('Multiple items received ' + Object.keys(data.entities));
@@ -146,12 +206,47 @@ io.sockets.on('connection', function (socket) {
       // else {
           if (Object.size(data.entities) >= 2){ 
           }
-          if (Object.keys(data.entities) == "greetings"){
+          if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("weather") || weather_flag == true){
+            if (weather_flag == false){
+              if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")) {
+                getweather("today");
+              }
+              else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")) {
+                getweather("tomorrow");
+              }
+              else {
+                weather_flag = true;
+                socket.emit('server_response', {response: "Weather for today or tomorrow?&#129300;"});
+              }
+            }
+            else if (weather_flag == true){
+              
+              if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
+                getweather("today");
+                weather_flag = false
+              }
+              else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
+                getweather("tomorrow");
+                weather_flag = false
+              }
+              else{
+                weather_flag = false
+              }
+            }
+            
+          }
+          else if (Object.keys(data.entities) == "greetings"){
             socket.emit('server_response', {response: "Hello, What do you need help with?"});
           }
           else if('oracle_info' in data.entities){
             if (data.entities.oracle_info[0].value == "name") {
               socket.emit('server_response', {response: "My name is Habari"});
+            }
+            else if (data.entities.oracle_info[0].value == "age") {
+              socket.emit('server_response', {response: "My age is actually unknown&#129300;"});
+            }
+            else if (data.entities.oracle_info[0].value == "place_of_birth") {
+              socket.emit('server_response', {response: "I'm from South Africa, but my parents are Nigerians&#128524"});
             }
           }
           else if ('friendly_question' in data.entities ){
@@ -179,7 +274,7 @@ io.sockets.on('connection', function (socket) {
 
           }
           else if (Object.size(data.entities) === 0){
-              var i;
+                  var i;
                   var j;
                   var k;
                   var inccorectWordsArray = [];
@@ -289,7 +384,7 @@ io.sockets.on('connection', function (socket) {
                       socket.emit('server_response', {response: this.responseText});
                     }
                     else if (this.readyState == 4 && this.status != 200) {
-                      socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I'm sorry. I don't think I can answer that, but try asking anything else &#128077;.</p></div>"});
+                      socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I'm sorry. I don't think I can help with that, but try asking anything else &#128077;.</p></div>"});
                     }
                   };
                 xhttp.open("GET", "http://api.wolframalpha.com/v1/result?appid=8TL836-JTYAY4L5JE&i="+encodeURIComponent(dataA.reason).split("%20").join("+"), true);
