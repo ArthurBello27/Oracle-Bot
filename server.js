@@ -51,6 +51,7 @@ app.get('/home', function(req, res) {
 })
 
 app.get('/chatInterface', function(req, res) {
+  console.log(req.ip);
  res.render('chat');
 })
 
