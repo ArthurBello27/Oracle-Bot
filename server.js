@@ -13,6 +13,8 @@ var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'gro
 'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
 var $ 
 var ip;
+var request = require('request');
+var cheerio = require('cheerio');
 require("node-jsdom").env("", function(err, window) {
     if (err) {
         console.error(err);
@@ -23,13 +25,14 @@ require("node-jsdom").env("", function(err, window) {
 
 });
 // require the path module
-var weather_flag = false;
+var weather_flag = false; //Flag which is set to true if user enters a sentence that containes the word 'weatehr'
 var path = require("path");
+// var navigator = require("navigator");
 // require express and create the express app
 var express = require("express");
-var Typo = require("typo-js");
+var Typo = require("typo-js");  //Node module for catching typos
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
-var dictionary = new Typo("en_US");
+var dictionary = new Typo("en_US"); //Dictionary for the typo module
 
 var app = express();
 // require bodyParser since we need to handle post data for adding a user
@@ -50,8 +53,8 @@ app.get('/home', function(req, res) {
  res.render('home');
 })
 
+//This is the page where the Habari Oracle is contained
 app.get('/chatInterface', function(req, res) {
-  console.log(req.ip);
  res.render('chat');
 })
 
@@ -61,11 +64,20 @@ app.get('/action/:id', function(req, res) {
 //process.env.PORT will use the browsers port
 var server = app.listen(process.env.PORT || 8000, function() {
  console.log("listening on port 8000");
+ // navigator.geolocation.getCurrentPosition(function(location) {
+
+ //          console.log(location.coords.latitude);
+ //          console.log(location.coords.longitude);
+ //          console.log(location.coords.accuracy);
+        
+ //        });
 })
 
+//Constants for WIT ai
 const {Wit, log} = require('node-wit');
 const client = new Wit({accessToken: 'UC2FRHQWCW2LRF34ECB2XEE5S7L7ZJNJ'});
 
+//New Object function used to determine the size of an object
 Object.size = function(obj) {
   var size = 0, key;
   for (key in obj) {
@@ -77,6 +89,9 @@ var user;
 
 var io = require('socket.io').listen(server) 
 io.sockets.on('connection', function (socket) {
+
+  //The function below is a selector to randomly choose the sentece that is sent to the user after their question has been answered.
+  //They all have a 2 second delay
   function chooser(selector){
     if(selector==1){
       setTimeout(function () {socket.emit('server_response', {response: "Feel free to ask any more questions."});}, 2000);
@@ -88,7 +103,9 @@ io.sockets.on('connection', function (socket) {
       setTimeout(function () {socket.emit('server_response', {response: "You can still ask more questions."});}, 2000);
     }
   }
-  console.log(socket.id);
+  // console.log(socket.id);
+  //The *insert number here* socket catches below are used to receive the emits from the option buttons used to 
+  //'find out something new' on the Habari Oracle 
   socket.on("about_tribes", function (data){
     socket.emit('server_response', {response: "That's a Tribe! A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
   })
@@ -101,81 +118,68 @@ io.sockets.on('connection', function (socket) {
   // socket.on("about_tribes", function (data){
   //   socket.emit('server_response', {response: "A tribe is somewhat of an upgraded clan. Once a clan has a certain number of members, it is escalated up to a tribe"});
   // })
-
+//The function below is used to get weather for either 'today' or 'tomorrow'
 function getweather (day) {
-  socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591."});
-  // var xhttp = new XMLHttpRequest();
-  // xhttp.onreadystatechange = function() {
-  //   if (this.readyState == 4 && this.status == 200) {
-  //     console.log( $.parseXML(this.responseText));
-  //     // socket.emit('server_response', {response: this.responseText});
-  //   }
-  // };
+  socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
+
+  //This first request is used to get the ip address, location and lat & long of the user.
+  //It will most likely be changed.
   $.getJSON('http://ipinfo.io', function(dataA){
-    console.log(dataA);
+    // console.log(dataA);
+    //Once the lat & long have been received, another request is made to a weather API so we can get the weather
+    //for the specific location for the specific day
     $.ajax({
       type: 'GET',
       dataType: 'json',
       contentType: 'application/json',
-      url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&format=json",
+      url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json",
       success: function(data) {
-
-        var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
-        +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but'll feel like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
-        +"Weather Description: "+data.data.current_condition[0].weatherDesc[0].value;
-        socket.emit('server_response', {response: weather_response});
+        if (day == "today"){
+          var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
+          +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but feels like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
+          +"Weather Description: "+data.data.current_condition[0].weatherDesc[0].value;
+          socket.emit('server_response', {response: weather_response});
+        }
+        else {
+          var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
+          +"There's going to be a high of "+data.data.weather[1].maxtempC+"&#176;C  and a low of "+data.data.weather[1].mintempC+"&#176;C <br> Weather conditions from 9AM: "+data.data.weather[1].hourly[3].weatherDesc[0].value;
+          socket.emit('server_response', {response: weather_response});
+        }
+      },
+      error: function(err){
+        console.log(err);
       }
 
     });
-});
-    // $.get("//ipinfo.io", function(response) {
-    //   console.log("whuttt", response.ip);
-    //   $.ajax({
-
-    //     type: 'GET',
-    //     dataType: 'json',
-    //     contentType: 'application/json',
-    //     url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+response.ip+"&includelocation=yes&date="+day+"&tp=3&format=json",
-    //     success: function(data) {
-    //       console.log(JSON.stringify(data))
-    //       var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day;
-    //       socket.emit('server_response', {response: weather_response});
-    //     }
-
-    //   });
-    // }, "jsonp");
-// console.log($);
-  // console.log(jq.getJSON("http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q=6.45,3.39&includelocation=yes&date="+day+"&tp=3&format=json"));
-  // xhttp.open("GET", "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q=6.45,3.39&includelocation=yes&date="+day+"&tp=3&format=xml", true);
-  // xhttp.send();
+  });
 }
+  //This is used to capture any text that the user sends from the input box.
   socket.on("user_sent", function (dataA){
+    //This variable is a random number that is used for the 'Chooser' function
     var selector = getRandomInt(0,3);
-
+    //All text that is sent from the user to the bot is sent to Wit.ai
     client.message(dataA.reason, {})
     .then((data) => {
-      
-      // console.log('Yay, got Wit.ai response: ' + Object.keys(data.entities));
-      // if (Object.size(data.entities) >= 2){
-      //   console.log('Multiple items received ' + Object.keys(data.entities));
-      //   socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p></div>"});
-      // }
-      // else {
+
           if (Object.size(data.entities) >= 2){ 
           }
-          if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("weather") || weather_flag == true){
-            if (weather_flag == false){
-              if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")) {
+
+          // The if statement below is used to determine whether or not the user needs weather info
+          if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("weather") || weather_flag == true){ //Check if the users text contains the word 'weather'
+          //The above if statement will be true if the sentence conatins 'weather' or if the weather flag is still set to true. 
+            if (weather_flag == false){//If the weather flag is false, which means the user is just asking about weather, we check if the have specified a day
+              if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")) { //If the user has specififed to get weather for today, the getweather function will be ran
                 getweather("today");
               }
-              else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")) {
+              else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")) {//If the user has specififed to get weather for tomorrow, the getweather function will be ran
                 getweather("tomorrow");
               }
-              else {
+              else {//If the user hasn't specified the day, the chatbot will ask them which day they want the weather for
                 weather_flag = true;
                 socket.emit('server_response', {response: "Weather for today or tomorrow?&#129300;"});
               }
             }
+            //if the
             else if (weather_flag == true){
               
               if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
@@ -238,113 +242,154 @@ function getweather (day) {
                   var suggestedCorrections = [];
                   var completeSuggestions = [];
                   var splitarray = dataA.reason.split(" ")
-                  for (i in splitarray){
-                    if (dictionary.check(splitarray[i]) == false){
-                      inccorectWordsArray.push(splitarray[i])
-                    }
-                  }
-                  for (i in inccorectWordsArray){
+                  // for (i in splitarray){
+                  //   if (dictionary.check(splitarray[i]) == false){
+                  //     inccorectWordsArray.push(splitarray[i])
+                  //   }
+                  // }
+                  // for (i in inccorectWordsArray){
 
-                    var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
-                    console.log("found", array_of_suggestions);
-                    for (j in array_of_suggestions){
-                      for (k in keywordsA){
-                        if (array_of_suggestions[j].toLowerCase() == keywordsA[k]){
-                          suggestedCorrections.push(keywordsA[k])
-                        }
-                      }
-                    }
+                  //   var array_of_suggestions = dictionary.suggest(inccorectWordsArray[i]);
+                  //   // console.log("found", array_of_suggestions);
+                  //   for (j in array_of_suggestions){
+                  //     for (k in keywordsA){
+                  //       if (array_of_suggestions[j].toLowerCase() == keywordsA[k]){
+                  //         suggestedCorrections.push(keywordsA[k])
+                  //       }
+                  //     }
+                  //   }
                     
-                  }
-                  if (dataA.reason.toLowerCase().includes("what")){
-                    for (i in suggestedCorrections){
-                      if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("What are "+ suggestedCorrections[i]);
-                      }
-                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("What is an "+ suggestedCorrections[i]);
-                      }
-                      else {
-                        completeSuggestions.push("What is a "+ suggestedCorrections[i]);
-                      }
-                    }
-                  }
-                  if (dataA.reason.toLowerCase().includes("how")){
-                    for (i in suggestedCorrections){
-                      if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("How are "+ suggestedCorrections[i]);
-                      }
-                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made");
-                      }
-                      else {
-                        completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made");
-                      }
-                    }
-                  }
-                  if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where") && (suggestedCorrections[0] == "village" || suggestedCorrections[0] == "villages" || suggestedCorrections[0] == "tribe" || suggestedCorrections[0] == "tribes" || suggestedCorrections[0] == "clan" || suggestedCorrections[0] == "clans" || suggestedCorrections[0] == "group" || suggestedCorrections[0] == "groups")){
-                    for (i in suggestedCorrections){
-                      if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("What are "+ suggestedCorrections[i]+"?");
-                      }
-                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("What is an "+ suggestedCorrections[i]+"?");
-                      }
-                      else {
-                        completeSuggestions.push("What is a "+ suggestedCorrections[i]+"?");
-                      }
-                    }
-                    for (i in suggestedCorrections){
-                      if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("How are "+ suggestedCorrections[i] +"made?");
-                      }
-                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made?");
-                      }
-                      else {
-                        completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made?");
-                      }
-                    }
-                  }
-                  else if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where")){
-                    for (i in suggestedCorrections){
-                      if (suggestedCorrections[i].slice(-1) == "s"){
-                        completeSuggestions.push("What are "+ suggestedCorrections[i]);
-                      }
-                      else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
-                        completeSuggestions.push("What is an "+ suggestedCorrections[i]);
-                      }
-                      else {
-                        completeSuggestions.push("What is a "+ suggestedCorrections[i]);
-                      }
-                    }
-                  }
+                  // }
+                  // if (dataA.reason.toLowerCase().includes("what")){
+                  //   for (i in suggestedCorrections){
+                  //     if (suggestedCorrections[i].slice(-1) == "s"){
+                  //       completeSuggestions.push("What are "+ suggestedCorrections[i]);
+                  //     }
+                  //     else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                  //       completeSuggestions.push("What is an "+ suggestedCorrections[i]);
+                  //     }
+                  //     else {
+                  //       completeSuggestions.push("What is a "+ suggestedCorrections[i]);
+                  //     }
+                  //   }
+                  // }
+                  // if (dataA.reason.toLowerCase().includes("how")){
+                  //   for (i in suggestedCorrections){
+                  //     if (suggestedCorrections[i].slice(-1) == "s"){
+                  //       completeSuggestions.push("How are "+ suggestedCorrections[i]);
+                  //     }
+                  //     else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                  //       completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made");
+                  //     }
+                  //     else {
+                  //       completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made");
+                  //     }
+                  //   }
+                  // }
+                  // if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where") && (suggestedCorrections[0] == "village" || suggestedCorrections[0] == "villages" || suggestedCorrections[0] == "tribe" || suggestedCorrections[0] == "tribes" || suggestedCorrections[0] == "clan" || suggestedCorrections[0] == "clans" || suggestedCorrections[0] == "group" || suggestedCorrections[0] == "groups")){
+                  //   for (i in suggestedCorrections){
+                  //     if (suggestedCorrections[i].slice(-1) == "s"){
+                  //       completeSuggestions.push("What are "+ suggestedCorrections[i]+"?");
+                  //     }
+                  //     else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                  //       completeSuggestions.push("What is an "+ suggestedCorrections[i]+"?");
+                  //     }
+                  //     else {
+                  //       completeSuggestions.push("What is a "+ suggestedCorrections[i]+"?");
+                  //     }
+                  //   }
+                  //   for (i in suggestedCorrections){
+                  //     if (suggestedCorrections[i].slice(-1) == "s"){
+                  //       completeSuggestions.push("How are "+ suggestedCorrections[i] +"made?");
+                  //     }
+                  //     else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                  //       completeSuggestions.push("How is an "+ suggestedCorrections[i] + " made?");
+                  //     }
+                  //     else {
+                  //       completeSuggestions.push("How is a "+ suggestedCorrections[i]+" made?");
+                  //     }
+                  //   }
+                  // }
+                  // else if (!dataA.reason.toLowerCase().includes("what") && !dataA.reason.toLowerCase().includes("how") && !dataA.reason.toLowerCase().includes("when") && !dataA.reason.toLowerCase().includes("where")){
+                  //   for (i in suggestedCorrections){
+                  //     if (suggestedCorrections[i].slice(-1) == "s"){
+                  //       completeSuggestions.push("What are "+ suggestedCorrections[i]);
+                  //     }
+                  //     else if (suggestedCorrections[i][0] == 'a' || suggestedCorrections[i][0] == 'e' || suggestedCorrections[i][0] == 'i' || suggestedCorrections[i][0] == 'o' || suggestedCorrections[i][0] == 'u'){
+                  //       completeSuggestions.push("What is an "+ suggestedCorrections[i]);
+                  //     }
+                  //     else {
+                  //       completeSuggestions.push("What is a "+ suggestedCorrections[i]);
+                  //     }
+                  //   }
+                  // }
                 
 
-                  console.log(suggestedCorrections);
-                  console.log(inccorectWordsArray);
-                console.log("Completed Suggestions", completeSuggestions);
+                  // console.log(suggestedCorrections);
+                  // console.log(inccorectWordsArray);
+                // console.log("Completed Suggestions", completeSuggestions);
+
                 if (completeSuggestions.length == 0){
                   var xhttp = new XMLHttpRequest();
                   xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
+                    
+                    if ((this.readyState == 4 && this.status != 200)) {
+                      var title = []
+                      var link_array = [];
+                      var description_array = [];
+                      console.log(encodeURIComponent(dataA.reason).split("%20").join("+"));
+                      request('https://www.google.com/search?q='+encodeURIComponent(dataA.reason).split("%20").join("+"), function (error, response, html) {
+                        if (!error && response.statusCode == 200) {
+                          // console.log(html);
+                          var che = cheerio.load(html);
+                          var count = 0
+                          var iteration = 0;
+                          che('a').each(function(i, element){
+                            // console.log(che(this))
+                            if (che(this).attr('href').substring(0, 4) == "/url" && che(this).parent().attr('class') == "r"){
+
+                              if(count < 2 && iteration %2 == 0){
+                                console.log(che(this).attr('href').split('&')[0].substring(7))
+                                link_array.push(che(this).attr('href').split('&')[0].substring(7))
+                                count+=1;
+                              }
+                              iteration +=1
+                            }
+                          });
+                          var count = 0
+                          che('.st').each(function(i, element){
+                            
+                            if(count < 3 && count%2 == 0){
+                              // console.log(che(this).text())
+                              description_array.push(che(this).text())
+                            }
+                            count+=1;
+                          });
+                          console.log(link_array);
+                          var links_in_anchortags="<br>";
+                          for (i in link_array){
+                            links_in_anchortags+= "<a style='text-decoration: none' href='"+link_array[i]+"'><div style='width: 40%; margin: 10px auto; background: white; padding: 10px; '><p style='text-align: center; font-size: 20px; color: black; font-family: Lato;'>"+link_array[i].match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im)[1]+"</p><p style='color: black'>"+description_array[i]+"</p></div></a><br>";
+                          }
+                          socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>Here's what I was able to find for \""+dataA.reason+"\"</p>"+links_in_anchortags+"</div>"});
+                        }
+                      });
+                      
+                    }
+                    else if (this.readyState == 4 && this.status == 200) {
                       console.log(this);
                       socket.emit('server_response', {response: this.responseText});
-                    }
-                    else if (this.readyState == 4 && this.status != 200) {
-                      socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>I'm sorry. I don't think I can help with that, but try asking anything else &#128077;.</p></div>"});
                     }
                   };
                 xhttp.open("GET", "http://api.wolframalpha.com/v1/result?appid=8TL836-JTYAY4L5JE&i="+encodeURIComponent(dataA.reason).split("%20").join("+"), true);
                 xhttp.send();
                 }
-                else{
-                  var holder = "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p><br>"
-                  for (i in completeSuggestions){
-                    holder += "<button class='responseButton' style='font-size: 30px; font-family: \"Lato\"; background: cornflowerblue;color: white;padding: 10px 15px 10px 15px;border-radius: 10px;border:none;'>"+completeSuggestions[i]+"</button><br>"
-                  }
-                  socket.emit('didyoumean', {response:   holder+"</div>"});
-                }
+                // else{
+                //   var holder = "<div class='chatbot'><p class='chatbotspan'>I didn't quite get that. Did you mean:</p><br>"
+                //   for (i in completeSuggestions){
+                //     holder += "<button class='responseButton' style='font-size: 30px; font-family: \"Lato\"; background: cornflowerblue;color: white;padding: 10px 15px 10px 15px;border-radius: 10px;border:none;'>"+completeSuggestions[i]+"</button><br>"
+                //   }
+                //   socket.emit('didyoumean', {response:   holder+"</div>"});
+                // }
               
             
           }
