@@ -339,7 +339,9 @@ function getweather (day) {
                       var description_array = [];
                       console.log(encodeURIComponent(dataA.reason).split("%20").join("+"));
                       request('https://www.google.com/search?q='+encodeURIComponent(dataA.reason).split("%20").join("+"), function (error, response, html) {
+                        console.log("Response status code", response.statusCode)
                         if (!error && response.statusCode == 200) {
+
                           // console.log(html);
                           var che = cheerio.load(html);
                           var count = 0
