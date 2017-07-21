@@ -160,14 +160,16 @@ function crawl_google(search_query){
     var description_array = [];
     request('https://www.google.com/search?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) {
       if (!error && response.statusCode == 200) {
+        // console.log(html)
         var che = cheerio.load(html);
         var count = 0
         var iteration = 0;
         che('a').each(function(i, element){
-          if (che(this).attr('href').substring(0, 4) == "/url" && che(this).parent().attr('class') == "r"){
 
+          if (che(this).attr('href').substring(0, 4) == "/url" && che(this).parent().attr('class') == "r"){
+            // console.log(che(this).attr('href').split('&')[0].substring(7))
             if(count < 2 && iteration %2 == 0){
-              console.log(che(this).attr('href').split('&')[0].substring(7))
+              // console.log(che(this).attr('href').split('&')[0].substring(7))
               link_array.push(che(this).attr('href').split('&')[0].substring(7))
               count+=1;
             }
@@ -175,13 +177,21 @@ function crawl_google(search_query){
           }
         });
         var count = 0
-        che('.st').each(function(i, element){
+        var iteration = 0
+        che('._sPg,.st').each(function(i, element){
+          // console.log("link: ", che(this).text(), "count", count)
           
-          if(count < 3 && count%2 == 0){
-            // console.log(che(this).text())
+          if(count < 2 && che(this).text() && iteration%2 == 0){
+            // console.log("added link: ", che(this).text())
             description_array.push(che(this).text())
+            count+=1;
+            
           }
-          count+=1;
+          if(che(this).text()){
+            iteration+=1;
+          }
+          
+          
         });
         // console.log(link_array);
         var links_in_anchortags="<br>";
