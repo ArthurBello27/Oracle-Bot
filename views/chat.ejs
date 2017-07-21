@@ -224,18 +224,12 @@
                     objDiv.scrollTop = objDiv.scrollHeight; 
                 })
                 socket.on('server_response', function (data){
-                    if(data.reason == "hb"){
-                        $('button').prop('disabled', false);
-                        $('#content').append(data.response);
-                         $('#loading').remove();
-                        objDiv.scrollTop = objDiv.scrollHeight; 
-                    }
-                    else{$('button').prop('disabled', false);
-                        $('#content').append("<div class='chatbot'><p class='chatbotspan'>"+data.response+"</p></div>");
-                        $('#loading').remove();
-                        console.log('The server says: ' + data.response);
-                        objDiv.scrollTop = objDiv.scrollHeight; 
-                    }
+                    $('button').prop('disabled', false);
+                    $('#content').append("<div class='chatbot'><p class='chatbotspan'>"+data.response+"</p></div>");
+                    $('#loading').remove();
+                    console.log('The server says: ' + data.response);
+                    objDiv.scrollTop = objDiv.scrollHeight; 
+                    
                 });
             $('#tribe_info').click(function() {
                 socket.emit("about_tribes");
@@ -244,7 +238,7 @@
                 socket.emit("about_clans");
             })
             $('#vilages_info').click(function() {
-                socket.emit("about_vilalges");
+                socket.emit("about_villages");
             })
             $('#habari_info').click(function() {
                 socket.emit("habari_info");
