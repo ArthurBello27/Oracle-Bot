@@ -100,6 +100,9 @@ io.sockets.on('connection', function (socket) {
     else if(selector == 2){
       setTimeout(function () {socket.emit('server_response', {response: "More questions? Feel free to ask."});}, 2000);
     }
+    else if(selector == 3){
+      setTimeout(function () {socket.emit('server_response', {response: "Anythign else? Feel free to ask."});}, 2000);
+    }
     else {
       setTimeout(function () {socket.emit('server_response', {response: "You can still ask more questions."});}, 2000);
     }
@@ -134,6 +137,7 @@ function getweather (day) {
       contentType: 'application/json',
       url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json",
       success: function(data) {
+        console.log(data)
         if (day == "today"){
           var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
           +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but feels like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
@@ -215,7 +219,7 @@ function crawl_google(search_query){
       }
     }
     //This variable is a random number that is used for the 'Chooser' function
-    var selector = getRandomInt(0,3);
+    var selector = getRandomInt(0,4);
     //All text that is sent from the user to the bot is sent to Wit.ai
     if (profanity_flag){
       socket.emit('server_response', {response: "Watch your language LOL"});
@@ -310,6 +314,7 @@ function crawl_google(search_query){
                     else if (this.readyState == 4 && this.status == 200) {
                       if ((this.responseText.split(" ").length >= 3 || !isNaN(this.responseText.split(" ")[0])) && (this.responseText.indexOf("word definition") == -1)){
                         socket.emit('server_response', {response: this.responseText});
+                        chooser(selector)
                       }
                       else {  
                         crawl_google(dataA.reason);
@@ -409,6 +414,30 @@ function crawl_google(search_query){
               }
               else if (data.entities.intent[0].value == "village_tribe_difference_info"){
                 socket.emit('server_response', {response: "A village is a private tribe where members join by invitation unlike a tribe which is public and anyone can join. Going public makes it faster for a transitioned clan to get discovered and grow to have more followers as users can easily search and add themselves to the tribe instead of requesting to be added."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "types_of_leaderboards"){
+                socket.emit('server_response', {response: "The two leaderboards in Habari are Kingdom Leaderboards and Tribe Leaderboards."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "kingdom_leaderboard_definition"){
+                socket.emit('server_response', {response: "A Kingdom Leaderboard is place where all of Habari's activities are summarized e.g. total number of prince/princesses in the kingdom, total number of tribes."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "tribe_leaderboard_definition"){
+                socket.emit('server_response', {response: "This contains the number of people in a tribe and name of the Tribe leaders i.e. the member of the tribe with the most influence (likes, shares, or comments for user’s posts). Members of tribes will be notified when they have a new tribe’s leader."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "habari_hierarchy_info"){
+                socket.emit('server_response', {response: "<img src='kinsman.png' style='width:40px'>Kinsman: 0 - 4,000 Points<br><img src='farmer.png' style='width:40px'>Farmer: >4,000 - 9,000 Points<br><img src='hunter.png' style='width:40px'>Hunter: >9,000 - 15,000 Points<br><img src='warrior.png' style='width:40px'>Warrior: >15,000 - 23,000 Points<br><img src='nobleman.png' style='width:40px'>Nobleman: >23,000 - 33,000 Points<br><img src='elder.png' style='width:40px'>Elder: >33,000 - 48,000 Points<br><img src='chief.png' style='width:40px'>Chief: >48,000 - 70,000 Points<br><img src='prince.png' style='width:40px'>Prince/Princess: >=70,000 Points<br><img src='emperor.png' style='width:40px'>Emperor: Competitive Title"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "kinsman_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='kinsman.png'></span><br>This is an entry level title for a user who has successfully created an account and rewarded with 100 pts."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "farmer_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='farmer.png'></span><br>A Kinsman who has earned additional 5,000 points."});
                 chooser(selector)
               }
             }
