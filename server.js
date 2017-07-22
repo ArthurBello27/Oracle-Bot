@@ -12,11 +12,11 @@ function existsInArray(array, item) {
 var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'group', 'groups', 'kingdoms', 'kingdom', 'leaderboards', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
 'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
 var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "cock", "pussy", "asshole", "fag", "bastard", "slut" ]
-var $ 
+// var $ 
 var ip;
 var request = require('request');
 var cheerio = require('cheerio');
-require("node-jsdom").env("", function(err, window) {
+require("jsdom-no-contextify").env("", function(err, window) {
     if (err) {
         console.error(err);
         return;
