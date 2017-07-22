@@ -25,7 +25,7 @@ require("node-jsdom").env("", function(err, window) {
     $ = require("jquery")(window);
 
 });
-// require the path module
+
 var weather_flag = false; //Flag which is set to true if user enters a sentence that containes the word 'weatehr'
 var path = require("path");
 // var navigator = require("navigator");
