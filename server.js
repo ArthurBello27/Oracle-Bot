@@ -163,7 +163,9 @@ function crawl_google(search_query){
     var link_array = [];
     var description_array = [];
     request('https://www.google.com/search?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) {
+      console.log("in crawler")
       if (!error && response.statusCode == 200) {
+        console.log("im supposed to execute")
         // console.log(html)
         var che = cheerio.load(html);
         var count = 0
@@ -309,6 +311,7 @@ function crawl_google(search_query){
                   var xhttp = new XMLHttpRequest();
                   xhttp.onreadystatechange = function() {
                     if ((this.readyState == 4 && this.status != 200)) {
+                      console.log("crawling google")
                       crawl_google(dataA.reason);
                     }
                     else if (this.readyState == 4 && this.status == 200) {
@@ -317,6 +320,7 @@ function crawl_google(search_query){
                         chooser(selector)
                       }
                       else {  
+                        console.log("crawling google")
                         crawl_google(dataA.reason);
                       }
                     }
