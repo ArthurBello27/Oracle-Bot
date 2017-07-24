@@ -164,6 +164,7 @@ function crawl_google(search_query){
     var description_array = [];
     request('https://www.google.com/search?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) {
       console.log("in crawler")
+      console.log(response);
       if (!error && response.statusCode == 200) {
         console.log("im supposed to execute")
         // console.log(html)
