@@ -11,16 +11,13 @@
     "express": "^4.15.3",
     "isomorphic-fetch": "^2.2.1",
     "jquery": "^3.2.1",
-<<<<<<< HEAD
     "jsdom-no-contextify": "^3.1.0",
     "node-wit": "^4.2.0",
     "path": "^0.12.7",
-=======
     "jsdom": "^11.1.0",
     "mongoose": "^4.11.1",
     "node-jsdom": "^3.1.5",
     "node-wit": "^4.2.0",
->>>>>>> 111be0fb9272a2bee3f80e31cede74e6b970f308
     "request": "^2.81.0",
     "socket.io": "^2.0.3",
     "typo-js": "^1.0.3",
