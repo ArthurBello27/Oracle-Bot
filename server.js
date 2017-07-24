@@ -166,8 +166,8 @@ function crawl_google(search_query){
       var che = cheerio.load(html);
       var count = 0
       var iteration;
-      console.log(html);
-      console.log(response);
+      // console.log(html);
+      // console.log(response);
 
       che('#zero_click_abstract').each(function(i, element){
 
