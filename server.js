@@ -179,7 +179,6 @@ function crawl_google(search_query){
           }
         }
       })
-      // console.log("description length", description_array.length)
       var singleURL
       singleURL = decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])
       if (description_array.length == 0){
