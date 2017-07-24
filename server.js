@@ -162,52 +162,27 @@ function crawl_google(search_query){
     var title = []
     var link_array = [];
     var description_array = [];
-    request('https://www.google.com/search?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) {
-      console.log("in crawler")
-      console.log(response);
-      if (!error && response.statusCode == 200) {
-        console.log("im supposed to execute")
-        // console.log(html)
-        var che = cheerio.load(html);
-        var count = 0
-        var iteration = 0;
-        che('a').each(function(i, element){
+    request('https://www.duckduckgo.com/html/?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) {
+      var che = cheerio.load(html);
+      var count = 0
+      var iteration;
+      che('#zero_click_abstract').each(function(i, element){
 
-          if (che(this).attr('href').substring(0, 4) == "/url" && che(this).parent().attr('class') == "r"){
-            // console.log(che(this).attr('href').split('&')[0].substring(7))
-            if(count < 2 && iteration %2 == 0){
-              // console.log(che(this).attr('href').split('&')[0].substring(7))
-              link_array.push(che(this).attr('href').split('&')[0].substring(7))
-              count+=1;
-            }
-            iteration +=1
+        for (iteration in che(this).text().split("  ")){
+          if(!che(this).text().split("  ")[iteration].startsWith("\n") && !che(this).text().split("  ")[iteration].startsWith(" ") && che(this).text().split("  ")[iteration]){
+            // console.log(che(this).text().split("  ")[iteration]);
+            description_array.push(che(this).text().split("  ")[iteration]);
+            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"</div>"});
+            break;
           }
-        });
-        var count = 0
-        var iteration = 0
-        che('._sPg,.st').each(function(i, element){
-          // console.log("link: ", che(this).text(), "count", count)
-          
-          if(count < 2 && che(this).text() && iteration%2 == 0){
-            // console.log("added link: ", che(this).text())
-            description_array.push(che(this).text())
-            count+=1;
-            
-          }
-          if(che(this).text()){
-            iteration+=1;
-          }
-          
-          
-        });
-        // console.log(link_array);
-        var links_in_anchortags="<br>";
-        for (i in link_array){
-          links_in_anchortags+= "<a style='text-decoration: none' href='"+link_array[i]+"'><div style='width: 40%; margin: 10px auto; background: white; padding: 10px; '><p style='text-align: center; font-size: 20px; color: black; font-family: Lato;'>"+link_array[i].match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im)[1]+"</p><p style='color: black'>"+description_array[i]+"</p></div></a><br>";
         }
-        socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>Here's what I was able to find for \""+search_query+"\"</p>"+links_in_anchortags+"</div>"});
+      })
+      console.log("description length", description_array.length)
+      if (description_array.length == 0){
+        socket.emit('didyoumean', {response: "<a href='"+decodeURIComponent(che('.result__snippet').first().attr('href').split("g=")[1])+"'><div class='chatbot'><p class='chatbotspan'>"+che('.result__snippet').first().text()+"</div></a>"});
       }
     });
+      
 }
   //This is used to capture any text that the user sends from the input box.
   socket.on("user_sent", function (dataA){
