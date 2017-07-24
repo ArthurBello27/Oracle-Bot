@@ -301,6 +301,7 @@ function crawl_google(search_query){
                 }
             }
             else if (Object.size(data.entities) === 0){
+              console.log("empty wit")
                     var i;
                     var j;
                     var k;
