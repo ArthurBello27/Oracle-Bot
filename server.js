@@ -437,9 +437,22 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "farmer_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='farmer.png'></span><br>A Kinsman who has earned additional 5,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='farmer.png'></span><br>A Farmer is a Kinsman who has earned additional 5,000 points."});
                 chooser(selector)
               }
+              else if (data.entities.intent[0].value == "hunter_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='hunter.png'></span><br>A Hunter is a Farmer who has earned additional 6,000 points."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "warrior_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>A Warrior is a Hunter who has earned additional 8,000 points."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "elder_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>An Elder is a Noble man who has earned additional 15,000 points."});
+                chooser(selector)
+              }
+
             }
       
     })
