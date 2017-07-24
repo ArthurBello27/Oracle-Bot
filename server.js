@@ -101,7 +101,7 @@ io.sockets.on('connection', function (socket) {
       setTimeout(function () {socket.emit('server_response', {response: "More questions? Feel free to ask."});}, 2000);
     }
     else if(selector == 3){
-      setTimeout(function () {socket.emit('server_response', {response: "Anythign else? Feel free to ask."});}, 2000);
+      setTimeout(function () {socket.emit('server_response', {response: "Anything else? Feel free to ask."});}, 2000);
     }
     else {
       setTimeout(function () {socket.emit('server_response', {response: "You can still ask more questions."});}, 2000);
@@ -166,7 +166,8 @@ function crawl_google(search_query){
       var che = cheerio.load(html);
       var count = 0
       var iteration;
-      // console.log(html);
+      console.log(html);
+      console.log(response);
 
       che('#zero_click_abstract').each(function(i, element){
 
@@ -180,6 +181,9 @@ function crawl_google(search_query){
         }
       })
       var singleURL
+      // console.log(che('.result__snippet').first().attr('href').split("g=")[1])
+      console.log(che('.web-result .result__snippet').first().attr('href'))
+      console.log(che('.result__snippet').first().attr('href'))
       singleURL = decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])
       if (description_array.length == 0){
         socket.emit('didyoumean', {response: "<a href='"+singleURL+"'><div class='chatbot'><p class='chatbotspan'>"+che('.result__snippet').first().text()+"<br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
