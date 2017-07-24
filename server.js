@@ -166,20 +166,24 @@ function crawl_google(search_query){
       var che = cheerio.load(html);
       var count = 0
       var iteration;
+      // console.log(html);
+
       che('#zero_click_abstract').each(function(i, element){
 
         for (iteration in che(this).text().split("  ")){
           if(!che(this).text().split("  ")[iteration].startsWith("\n") && !che(this).text().split("  ")[iteration].startsWith(" ") && che(this).text().split("  ")[iteration]){
             // console.log(che(this).text().split("  ")[iteration]);
             description_array.push(che(this).text().split("  ")[iteration]);
-            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"</div>"});
+            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"</p></div>"});
             break;
           }
         }
       })
-      console.log("description length", description_array.length)
+      // console.log("description length", description_array.length)
+      var singleURL
+      singleURL = decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])
       if (description_array.length == 0){
-        socket.emit('didyoumean', {response: "<a href='"+decodeURIComponent(che('.result__snippet').first().attr('href').split("g=")[1])+"'><div class='chatbot'><p class='chatbotspan'>"+che('.result__snippet').first().text()+"</div></a>"});
+        socket.emit('didyoumean', {response: "<a href='"+singleURL+"'><div class='chatbot'><p class='chatbotspan'>"+che('.result__snippet').first().text()+"<br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
       }
     });
       
@@ -277,7 +281,7 @@ function crawl_google(search_query){
                 }
             }
             else if (Object.size(data.entities) === 0){
-              console.log("empty wit")
+              // console.log("empty wit")
                     var i;
                     var j;
                     var k;
@@ -288,7 +292,7 @@ function crawl_google(search_query){
                   var xhttp = new XMLHttpRequest();
                   xhttp.onreadystatechange = function() {
                     if ((this.readyState == 4 && this.status != 200)) {
-                      console.log("crawling google")
+                      // console.log("crawling google")
                       crawl_google(dataA.reason);
                     }
                     else if (this.readyState == 4 && this.status == 200) {
@@ -297,7 +301,7 @@ function crawl_google(search_query){
                         chooser(selector)
                       }
                       else {  
-                        console.log("crawling google")
+                        // console.log("crawling google")
                         crawl_google(dataA.reason);
                       }
                     }
