@@ -186,7 +186,7 @@ function crawl_google(search_query){
       console.log(che('.result__snippet').first().attr('href'))
       singleURL = decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])
       if (description_array.length == 0){
-        socket.emit('didyoumean', {response: "<a href='"+singleURL+"'><div class='chatbot'><p class='chatbotspan'>"+che('.result__snippet').first().text()+"<br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
+        socket.emit('didyoumean', {response: "<a href='"+singleURL+"'><div class='chatbot'><p class='chatbotspan'>"+che('.result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
       }
     });
       
