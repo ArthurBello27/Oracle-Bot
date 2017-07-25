@@ -449,7 +449,7 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "habari_coins_defintion"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_coin_front.png'><img style='width: 120px; margin-bottom: 8px' src='habari_coin_back.png'></span><br>HGC(Habari Gold Coins) are activity and transaction based virtual currencies and rewards with a limited amount available for in-app purchases at discounted prices."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='Habari_coin_front.png'><img style='width: 120px; margin-bottom: 8px' src='Habari_coin_back.png'></span><br>HGC(Habari Gold Coins) are activity and transaction based virtual currencies and rewards with a limited amount available for in-app purchases at discounted prices."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "how_to_earn_coins"){
