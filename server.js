@@ -413,31 +413,31 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "kinsman_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='kinsman.png'></span><br>This is an entry level title for a user who has successfully created an account and rewarded with 100 pts."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='kinsman.png'></span><br>This is an entry level title for a user who has successfully created an account and rewarded with 100 pts. 0 - 4,000 Points"});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "farmer_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='farmer.png'></span><br>A Farmer is a Kinsman who has earned additional 5,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='farmer.png'></span><br>A Farmer is a Kinsman who has earned additional 5,000 points. 4,000 - 9,000 Points"});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "hunter_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='hunter.png'></span><br>A Hunter is a Farmer who has earned additional 6,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='hunter.png'></span><br>A Hunter is a Farmer who has earned additional 6,000 points. 9,000 - 15,000 Points"});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "warrior_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>A Warrior is a Hunter who has earned additional 8,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>A Warrior is a Hunter who has earned additional 8,000 points. 15,000 - 23,000 Points"});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "elder_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>An Elder is a Nobleman who has earned additional 15,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>An Elder is a Nobleman who has earned additional 15,000 points. 33,000 - 48,000 Points "});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "chief_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='chief.png'></span><br>A Chief is an Elder who has earned additional 22,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='chief.png'></span><br>A Chief is an Elder who has earned additional 22,000 points. 48,000 - 70,000 Points"});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "prince_princess_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='prince.png'></span><br>A Prince/Princess is a Chief who has earned additional 30,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='prince.png'></span><br>A Prince/Princess is a Chief who has earned additional 30,000 points. >=70,000 Points"});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "habari_point_system"){
@@ -445,7 +445,19 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "emperor_defintion"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='emperor.png'></span><br>This is the highest title in the Habari Kingdom, it is a competitive title as there can be only one emperor at any given time who can be dethroned by any of the existing prince or princesses with a minimum of 100,000 HGC and an additional 5,000 points more than the reigning emperor. Some of the perks of being Emperor are:"});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='emperor.png'></span><br>This is the highest title in the Habari Kingdom, it is a competitive title as there can be only one emperor at any given time who can be dethroned by any of the existing prince or princesses with a minimum of 100,000 HGC and an additional 5,000 points more than the reigning emperor. Some of the perks of being Emperor are:<br>Weekly airtime<br>Instant gifts (promotional items, physical gold coins, lapel pins)<br>Exclusive parties<br>Points<br>Habari Gold Coins<br>Merchant sponsored prizes"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "habari_coins_defintion"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari coin front.png'><img style='width: 120px; margin-bottom: 8px' src='habari coin back.png'></span><br>HGC(Habari Gold Coins) are activity and transaction based virtual currencies and rewards with a limited amount available for in-app purchases at discounted prices."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_earn_coins"){
+                socket.emit('server_response', {response: "Coins can be earned in various ways:<br>1. By going up in the Habari hierarchy<br>2. Performing card transactions |   &#8358;0 to &#8358;500 airtime = 2,000 HGC, > &#8358;500 = 5,000 HGC and transfers = 10,000 HGC.<br>3. Transfer of HGC among users within Habari<br>4. Playing and winning different Habari games<br>5. Earning the Don badge. Don badge = 3000 HGC<br>6. Bonus HGC can also be given randomly to users on a certain hierarchy. For example, there can be a promo where all warriors are rewarded with X HGC"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_earn_points"){
+                socket.emit('server_response', {response: "Points can be earned through the following ways:<br>Onboarding - 100 points<br>Adding a profile picture for the first time - 5 points<br>Updating status for the first time - 5 points<br>Adding a card for the first time - 50 points<br>Adding a friend - 0.5 points<br>Create a group with more than 3 people existing for over 72 hours - 10 points<br>Join a tribe - 1 point"});
                 chooser(selector)
               }
             }
