@@ -166,7 +166,7 @@ function crawl_google(search_query){
       var che = cheerio.load(html);
       var count = 0
       var iteration;
-      // console.log(html);
+      console.log(html);
       // console.log(response);
 
       che('#zero_click_abstract').each(function(i, element){
@@ -175,7 +175,7 @@ function crawl_google(search_query){
           if(!che(this).text().split("  ")[iteration].startsWith("\n") && !che(this).text().split("  ")[iteration].startsWith(" ") && che(this).text().split("  ")[iteration]){
             // console.log(che(this).text().split("  ")[iteration]);
             description_array.push(che(this).text().split("  ")[iteration]);
-            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"</p></div>"});
+            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"<br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div>"});
             break;
           }
         }
@@ -183,10 +183,10 @@ function crawl_google(search_query){
       var singleURL
       // console.log(che('.result__snippet').first().attr('href').split("g=")[1])
       console.log(che('.web-result .result__snippet').first().attr('href'))
-      console.log(che('.result__snippet').first().attr('href'))
+      // console.log(che('.result__snippet').first().attr('href'))
       singleURL = decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])
       if (description_array.length == 0){
-        socket.emit('didyoumean', {response: "<a href='"+singleURL+"'><div class='chatbot'><p class='chatbotspan'>"+che('.result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
+        socket.emit('didyoumean', {response: "<a href='"+singleURL+"'><div class='chatbot'><p class='chatbotspan'>"+che('.web-result .result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
       }
     });
       
@@ -299,7 +299,10 @@ function crawl_google(search_query){
                       crawl_google(dataA.reason);
                     }
                     else if (this.readyState == 4 && this.status == 200) {
-                      if ((this.responseText.split(" ").length >= 3 || !isNaN(this.responseText.split(" ")[0])) && (this.responseText.indexOf("word definition") == -1)){
+                      if (dataA.reason.toLowerCase().includes(this.responseText.toLowerCase()) && this.responseText.split(" ").length <= 5){
+                        crawl_google(dataA.reason);
+                      }
+                      else if ((this.responseText.split(" ").length >= 3 || !isNaN(this.responseText.split(" ")[0])) && (this.responseText.indexOf("word definition") == -1)){
                         socket.emit('server_response', {response: this.responseText});
                         chooser(selector)
                       }
@@ -437,10 +440,17 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "elder_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>An Elder is a Noble man who has earned additional 15,000 points."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>An Elder is a Nobleman who has earned additional 15,000 points."});
                 chooser(selector)
               }
-
+              else if (data.entities.intent[0].value == "chief_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='chief.png'></span><br>A Chief is an Elder who has earned additional 22,000 points."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "prince_princess_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='prince.png'></span><br>A Prince/Princess is a Chief who has earned additional 30,000 points."});
+                chooser(selector)
+              }
             }
       
     })
