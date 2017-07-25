@@ -451,8 +451,12 @@ function crawl_google(search_query){
                 socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='prince.png'></span><br>A Prince/Princess is a Chief who has earned additional 30,000 points."});
                 chooser(selector)
               }
-              else if (data.entities.intent[0].value == "emperor_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='emperor.png'></span><br>This is the highest title in the Habari Kingdom, it is a competitive title as there can be only one emperor at any given time who can be dethroned by any of the existing prince or princesses with a minimum of 100,000 HGC and an additional 5,000 points more than the reigning emperor. Because of this, there will be special incentives to encourage users to attain this status. Some of the incentives are as follows:"});
+              else if (data.entities.intent[0].value == "habari_point_system"){
+                socket.emit('server_response', {response: "The point system in Habari allows users in move between the different hierarchies. Points are background activity based rewards that allows users to move in hierarchy. Every user has a point meter system to track their hierarchy progression in the Habari kingdom"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "emperor_defintion"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='emperor.png'></span><br>This is the highest title in the Habari Kingdom, it is a competitive title as there can be only one emperor at any given time who can be dethroned by any of the existing prince or princesses with a minimum of 100,000 HGC and an additional 5,000 points more than the reigning emperor. Some of the perks of being Emperor are:"});
                 chooser(selector)
               }
             }
