@@ -166,7 +166,7 @@ function crawl_google(search_query){
       var che = cheerio.load(html);
       var count = 0
       var iteration;
-      console.log(html);
+      // console.log(html);
       // console.log(response);
 
       che('#zero_click_abstract').each(function(i, element){
@@ -182,7 +182,7 @@ function crawl_google(search_query){
       })
       var singleURL
       // console.log(che('.result__snippet').first().attr('href').split("g=")[1])
-      console.log(che('.web-result .result__snippet').first().attr('href'))
+      // console.log(che('.web-result .result__snippet').first().attr('href'))
       // console.log(che('.result__snippet').first().attr('href'))
       singleURL = decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])
       if (description_array.length == 0){
@@ -449,6 +449,10 @@ function crawl_google(search_query){
               }
               else if (data.entities.intent[0].value == "prince_princess_definition"){
                 socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='prince.png'></span><br>A Prince/Princess is a Chief who has earned additional 30,000 points."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "emperor_definition"){
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='emperor.png'></span><br>This is the highest title in the Habari Kingdom, it is a competitive title as there can be only one emperor at any given time who can be dethroned by any of the existing prince or princesses with a minimum of 100,000 HGC and an additional 5,000 points more than the reigning emperor. Because of this, there will be special incentives to encourage users to attain this status. Some of the incentives are as follows:"});
                 chooser(selector)
               }
             }

@@ -206,7 +206,7 @@
                     }
             });
              $('#go').click(function (){
-                console.log($('input').val());
+                // console.log($('input').val());
                 if($('input').val() != "" && $('input').val() != " "){
                     $('button').prop('disabled', 'disabled');
                     $('#content').append("<div class='user'><span class='userspan'>"+$('input').val()+"</span></div><img id='loading' style='width: 50px' src='http://res.cloudinary.com/ltrzxluwr/image/upload/v1499347205/ezgif.com-crop_oy4awb.gif'>");
@@ -227,7 +227,7 @@
                     $('button').prop('disabled', false);
                     $('#content').append("<div class='chatbot'><p class='chatbotspan'>"+data.response+"</p></div>");
                     $('#loading').remove();
-                    console.log('The server says: ' + data.response);
+                    // console.log('The server says: ' + data.response);
                     objDiv.scrollTop = objDiv.scrollHeight; 
                     
                 });
