@@ -8,15 +8,12 @@ function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
 
-//The following keywords are keywords in regards to information on Habari's main criteria
-var keywordsA = ['tribe', 'tribes', 'clans', 'clan', 'village', 'villages', 'group', 'groups', 'kingdoms', 'kingdom', 'leaderboards', 'leaderboard', 'kinsman', 'farmer', 'hunter', 'warrior', 'nobleman',
-'elder', 'chief', 'prince', 'princess', 'emperor', 'coins', 'badge', 'points', 'moment', 'arena', 'crown', 'challenge', 'playground']
 var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "cock", "pussy", "asshole", "fag", "bastard", "slut" ]
-// var $ 
+var $ 
 var ip;
-var request = require('request');
-var cheerio = require('cheerio');
-require("jsdom-no-contextify").env("", function(err, window) {
+var request = require('request'); //Module for requesting web pages
+var cheerio = require('cheerio'); //Module used for crawling
+require("jsdom-no-contextify").env("", function(err, window) { //JQuery module used to make Ajax calls in this app
     if (err) {
         console.error(err);
         return;
@@ -28,13 +25,9 @@ require("jsdom-no-contextify").env("", function(err, window) {
 
 var weather_flag = false; //Flag which is set to true if user enters a sentence that containes the word 'weatehr'
 var path = require("path");
-// var navigator = require("navigator");
 // require express and create the express app
 var express = require("express");
-var Typo = require("typo-js");  //Node module for catching typos
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
-var dictionary = new Typo("en_US"); //Dictionary for the typo module
-
 var app = express();
 // require bodyParser since we need to handle post data for adding a user
 var bodyParser = require("body-parser");
@@ -86,7 +79,6 @@ Object.size = function(obj) {
   }
   return size;
 };
-var user;
 
 var io = require('socket.io').listen(server) 
 io.sockets.on('connection', function (socket) {
@@ -128,7 +120,6 @@ function getweather (day) {
   //This first request is used to get the ip address, location and lat & long of the user.
   //It will most likely be changed.
   $.getJSON('http://ipinfo.io', function(dataA){
-    // console.log(dataA);
     //Once the lat & long have been received, another request is made to a weather API so we can get the weather
     //for the specific location for the specific day
     $.ajax({
@@ -158,35 +149,33 @@ function getweather (day) {
   });
 }
 
+//The function below is used to crawl search engines. It is currently specified to currently crawl DuckDuckGo.com on request
+//The previously usde search engine was Google.
+//The function takes the users query and passes it into DuckDuckGo. From there, the results page from DuckDuckGo
+//is crawled through and then 'Zero click info' on the topic is passed back to the user if it available for the topic.
+//If it isn't then the first result is sent back to the user.
 function crawl_google(search_query){
-    var title = []
-    var link_array = [];
-    var description_array = [];
-    request('https://www.duckduckgo.com/html/?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) {
-      var che = cheerio.load(html);
-      var count = 0
-      var iteration;
-      // console.log(html);
-      // console.log(response);
+    var description_array = []; //This variable holds the text of the information that will be returned to the user
+    request('https://www.duckduckgo.com/html/?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) { //This function first gets the request
+      var che = cheerio.load(html); // The cheerio node module is then responsible for parsing, loading and crawling through the HTML of the requested page. It works just as JQuery
+      //Basically, the 'che' variable is the same as the dollar sign ($) in JQuery
+      var iteration; //This variable is the index of the iteration of a certain array.
 
-      che('#zero_click_abstract').each(function(i, element){
+      che('#zero_click_abstract').each(function(i, element){ //This function loops through the "zero_click_abstract" element, which is located in the HTML gotten from the DuckDuckGo search. There will most likely only be one "zero_click_abstract"
 
-        for (iteration in che(this).text().split("  ")){
-          if(!che(this).text().split("  ")[iteration].startsWith("\n") && !che(this).text().split("  ")[iteration].startsWith(" ") && che(this).text().split("  ")[iteration]){
-            // console.log(che(this).text().split("  ")[iteration]);
-            description_array.push(che(this).text().split("  ")[iteration]);
+        for (iteration in che(this).text().split("  ")){ //For some reason, The text content of the "zero_click_abstract" element and some other HTML elements from the returned search query contain numberous spaces and newlines
+        //This for loop there splits the text by double spaces in attempt to access the main text
+          if(!che(this).text().split("  ")[iteration].startsWith("\n") && !che(this).text().split("  ")[iteration].startsWith(" ") && che(this).text().split("  ")[iteration]){ //This if statement then checks each item in the newly created array to find the first bit of text that doesnt start with a space or new line
+            description_array.push(che(this).text().split("  ")[iteration]);//Once the text is found, it is pushed into the 'description_array' array.
             socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"<br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div>"});
             break;
           }
         }
       })
-      var singleURL
-      // console.log(che('.result__snippet').first().attr('href').split("g=")[1])
-      // console.log(che('.web-result .result__snippet').first().attr('href'))
-      // console.log(che('.result__snippet').first().attr('href'))
-      singleURL = decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])
-      if (description_array.length == 0){
-        socket.emit('didyoumean', {response: "<a href='"+singleURL+"'><div class='chatbot'><p class='chatbotspan'>"+che('.web-result .result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
+      //The if statement below checks to see if the 'description_array' is empty
+      if (description_array.length == 0){ //In a situation where there is no 'zero click' information returned, the description array will be empty at this point.
+        //So therefore, the first link and description gotten from the search are sent to the user.
+        socket.emit('didyoumean', {response: "<a href='"+decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])+"'><div class='chatbot'><p class='chatbotspan'>"+che('.web-result .result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div></a>"});
       }
     });
       
@@ -195,25 +184,24 @@ function crawl_google(search_query){
   socket.on("user_sent", function (dataA){
     var indexA;
     var indexB;
-    var profanity_flag = false
+    var profanity_flag = false //This profanity flag is used to check if there are any curse words in the users text.
     for (indexA in dataA.reason.split(" ")){
       for (indexB in profanity){
-        if(dataA.reason.split(" ")[indexA].indexOf(profanity[indexB]) != -1 ){
+        if(dataA.reason.split(" ")[indexA].indexOf(profanity[indexB]) != -1 ){  //If there are any curse words, the profanity flag will be set to true.
           profanity_flag = true;
         }
       }
     }
     //This variable is a random number that is used for the 'Chooser' function
     var selector = getRandomInt(0,4);
-    //All text that is sent from the user to the bot is sent to Wit.ai
+    //If the profanity flag is set, then the bot simply sends this text to the user
     if (profanity_flag){
       socket.emit('server_response', {response: "Watch your language LOL"});
     }
+    //if the flag is not set, then all the text is sent to Wit.ai to determine which category it falls under
     else {
       client.message(dataA.reason, {})
       .then((data) => {
-            if (Object.size(data.entities) >= 2){ 
-            }
             // The if statement below is used to determine whether or not the user needs weather info
             if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("weather") || weather_flag == true){ //Check if the users text contains the word 'weather'
             //The above if statement will be true if the sentence conatins 'weather' or if the weather flag is still set to true. 
@@ -229,7 +217,7 @@ function crawl_google(search_query){
                   socket.emit('server_response', {response: "Weather for today or tomorrow?&#129300;"});
                 }
               }
-              //if the
+              //if the weather flag is already active, then the bot will simply check to see if the user's sentence contains 'today' or 'tomorrow'
               else if (weather_flag == true){
                 
                 if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
@@ -246,10 +234,13 @@ function crawl_google(search_query){
               }
               
             }
+            //If the user entered in a greeting such as "hello" or "hey", this response is sent back to them
             else if (Object.keys(data.entities) == "greetings"){
               socket.emit('server_response', {response: "Hello, What do you need help with?"});
             }
+            //If the entity returned by Wit is "oracle_info", that means the user has asked a question specifically about the habari bot, such as "how old are you?"
             else if('oracle_info' in data.entities){
+              //The value of the entity is then checked to know the specific response to give.
               if (data.entities.oracle_info[0].value == "name") {
                 socket.emit('server_response', {response: "My name is Habari"});
               }
@@ -260,6 +251,7 @@ function crawl_google(search_query){
                 socket.emit('server_response', {response: "I'm from South Africa, but my parents are Nigerians&#128524"});
               }
             }
+            //This statement checks to see if the user asked a 'friendly question' towards the habari bot, such as "how is your day going?"
             else if ('friendly_question' in data.entities ){
                 if (data.entities.friendly_question[0].value == "true_regarding_your_day") {
                   socket.emit('server_response', {response: "My day is wonderful as ever&#127775"});
@@ -283,31 +275,28 @@ function crawl_google(search_query){
                   }
                 }
             }
+            //Now, the statement below is executed if Wit.ai doesn't return any response. This will be the case if the user
+            //is not asking the bot anything habari specific or direct personal questions to the bot itself
             else if (Object.size(data.entities) === 0){
-              // console.log("empty wit")
-                    var i;
-                    var j;
-                    var k;
-                    var inccorectWordsArray = [];
-                    var suggestedCorrections = [];
-                    var completeSuggestions = [];
-                    var splitarray = dataA.reason.split(" ")
+                  //An XMLHttpRequest is made to Wolfram Aplha's api. This Api is used to answer general questions such as "How tall is the Eiffel Tower?"
+                  //Sometimes, the answer provided by the api doesn't make sense E.g in a case where a user types "LL Cool J", the api also returns "LL Cool J"
+                  //as the answer. Answers like this have been filtered out in the function below
                   var xhttp = new XMLHttpRequest();
                   xhttp.onreadystatechange = function() {
-                    if ((this.readyState == 4 && this.status != 200)) {
-                      // console.log("crawling google")
+                    if ((this.readyState == 4 && this.status != 200)) { //If the response isn't "succesful", we send the query to the Google/DuckDuckGo Crawler
                       crawl_google(dataA.reason);
                     }
-                    else if (this.readyState == 4 && this.status == 200) {
-                      if (dataA.reason.toLowerCase().includes(this.responseText.toLowerCase()) && this.responseText.split(" ").length <= 5){
-                        crawl_google(dataA.reason);
+                    else if (this.readyState == 4 && this.status == 200) { //If the response is succesful we don't yet send it to the user. we filter first
+                      if (dataA.reason.toLowerCase().includes(this.responseText.toLowerCase()) && this.responseText.split(" ").length <= 5){ //Based on the pattern of responses I saw from the api, this if statemnt correctly filters 
+                      //out issues with the api returning the question as the answer and simply sends the request to the Crawler
+                        crawl_google(dataA.reason); 
                       }
-                      else if ((this.responseText.split(" ").length >= 3 || !isNaN(this.responseText.split(" ")[0])) && (this.responseText.indexOf("word definition") == -1)){
+                      else if ((this.responseText.split(" ").length >= 3 || !isNaN(this.responseText.split(" ")[0])) && (this.responseText.indexOf("word definition") == -1)){ //This if statement also filters out based on patterns I noticed. 
+                      //If the statement is true, that means a meaningful and most likely correct response was sent bacl. It is then sent to the user.
                         socket.emit('server_response', {response: this.responseText});
-                        chooser(selector)
+                        chooser(selector)//call the chooser function to ask the user if he/she has any more questions or such.
                       }
-                      else {  
-                        // console.log("crawling google")
+                      else {//If the call doesn't get filtered into the "correct response" section, it is sent to the Crawler 
                         crawl_google(dataA.reason);
                       }
                     }
@@ -316,10 +305,10 @@ function crawl_google(search_query){
                   xhttp.send();
               
             }
+            //This section houses all the available answers to questions on anything habari related. The entity is labelled as intent. We can basically take "intent" to mean "Habari App info" in a theoretical sense.
+            //All the values and entities used are must be the same as those specified in Wit.ai
             else if(Object.keys(data.entities) == "intent"){
               if (data.entities.intent[0].value == "merchant_bot_info"){
-
-
                 socket.emit('server_response', {response: "All merchants will have BOTs "});
                 chooser(selector)
               }
