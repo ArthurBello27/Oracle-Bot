@@ -472,6 +472,22 @@ function crawl_google(search_query){
                 socket.emit('server_response', {response: "<b>The following are the types of badges available in Habari and their meanings:</b><br><img src='newbie.png' style='width:40px'>Newbie - Complete registration / onboarding<br><img src='photophresh.png' style='width:40px'>Photophresh - Upload a profile picture for the first time<br><img src='swipe_master.png' style='width:40px'>Swipe Master - Add a card to profile for the first time<br><img src='thick_wallet.png' style='width:40px'>Thick Wallet - Add money to virtual wallet for the first time<br><img src='swagg.png' style='width:40px'>Swag - Customize profile for the first time<br><img src='buzz.png' style='width:40px'>Buzz - Share X number of posts outside the app<br><img src='socialite.png' style='width:40px'>Socialite - Add X number of friends on Habari<br><img src='citizen.png' style='width:40px'>Citizen - Spend a total of 100 hours on Habari<br><img src='chatterbox.png' style='width:40px'>Chatterbox - Comment on 30 different posts<br><img src='baller.png' style='width:40px'>Baller - Make X number of successful transactions in Habari<br><img src='alpha.png' style='width:40px'>Alpha - Create 5 active clans<br><br><img src='warrior_in_the_making.png' style='width:40px'>Warrior In The Making - Have 500 posts within tribes<br><img src='influencer.png' style='width:40px'>Influencer - 3,000 likes on posts in tribes<br><img src='explorer.png' style='width:40px'>Explorer - Post from 3 different states based on app geo-tag<br><img src='spectator.png' style='width:40px'>Spectator - Have a total of 500 likes on different posts<br><img src='explorer.png' style='width:40px'>Explorer - Post from 3 different states based on app geo-tag<br><img src='squad.png' style='width:40px'>Squad - clan with a total of 5,000 messages.<br><img src='challenger.png' style='width:40px'>Challenger - User who has attempted to challenge the reigning Emporer.<br><img src='don.png' style='width:40px'>Don - The admin of a clan that becomes a tribe earns this badge.<br><img src='lord_of_the_beatz.png' style='width:40px'>Lord Of The Beatz - User has been active in the music tribe for 100 hours"});
                 chooser(selector)
               }
+              else if (data.entities.intent[0].value == "deals_definition"){
+                socket.emit('server_response', {response: "Deals in Habari are discounted items put up by featured merchants for purchase. All items on Habari are on discount and are the best deals anywhere."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "types_of_deals"){
+                socket.emit('server_response', {response: "<b>There are 2 types of deals in Habari:</b><br>1. Regular deals by Merchants: These are deals placed in the market square by merchants for purchase by followers.<br>2. Mega deals: These deals are not up for sale, users can only win these items by bidding for them."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "marketsquare_definition"){
+                socket.emit('server_response', {response: "The Marketsquare is where all deals can be viewed by users regardless of merchants they follow. It will feature top trending deals and merchants based on likes / comments and all other deals being posted on Habari, including deals from the Habari team. It is only opened to registered and verified merchants with all posted deals also appearing on their follower’s page."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "purchased_deal_cancellation"){
+                socket.emit('server_response', {response: "You must contact the merchant directly for your cancellation request."});
+                chooser(selector)
+              }
             }
       
     })
