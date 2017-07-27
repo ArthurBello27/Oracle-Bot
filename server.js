@@ -8,7 +8,7 @@ function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
 
-var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "cock", "pussy", "asshole", "fag", "bastard", "slut" ]
+var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "cock", "pussy", "asshole", "fag", "bastard", "slut", "nigg" ]
 var $ 
 var ip;
 var request = require('request'); //Module for requesting web pages
@@ -23,7 +23,7 @@ require("jsdom-no-contextify").env("", function(err, window) { //JQuery module u
 
 });
 
-var weather_flag = false; //Flag which is set to true if user enters a sentence that containes the word 'weatehr'
+var weather_flag = false; //Flag which is set to true if user enters a sentence that containes the word 'weather'
 var path = require("path");
 // require express and create the express app
 var express = require("express");
@@ -128,7 +128,7 @@ function getweather (day) {
       contentType: 'application/json',
       url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json",
       success: function(data) {
-        console.log(data)
+        console.log(data.data.weather)
         if (day == "today"){
           var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
           +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but feels like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
@@ -232,7 +232,6 @@ function crawl_google(search_query){
                   weather_flag = false
                 }
               }
-              
             }
             //If the user entered in a greeting such as "hello" or "hey", this response is sent back to them
             else if (Object.keys(data.entities) == "greetings"){
@@ -486,6 +485,46 @@ function crawl_google(search_query){
               }
               else if (data.entities.intent[0].value == "purchased_deal_cancellation"){
                 socket.emit('server_response', {response: "You must contact the merchant directly for your cancellation request."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_place_bids"){
+                socket.emit('server_response', {response: "<b>To start bidding on Habari for Mega deals:</b><br>1. Recharge your account with some HGC<br>2. Choose an item that you would like to win<br>3. Start bidding to find the lowest unique bid<br>4. Place a single bid by paying a low subscription fee or place multiple bids at a higher subscription fee (fees are in HGC)"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "bidding_methods"){
+                socket.emit('server_response', {response: ""});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "sending_money_to_contacts"){
+                socket.emit('server_response', {response: "<b>The following transfer methods can be performed on Habari:</b><br><b>Habari P2P transfer:</b> A user can transfer HGC to Naira to any of his contacts by selecting the contact’s profile and choosing the transfer funds option under it.<br><b>Wallet to Account Transfer:</b> A user can move money from his wallet to his registered bank account card on Habari<br><b>Accoint to Account Transfers:</b> A user can move funds from his bank account card to another user’s bank account card on Habari.<br><b>Group Payments:</b> Members of a clan can make group payments by setting a goal, amount, timeframe. Afterwards, a bar will track progress of group goal and members who have paid towards goal."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "types_of_verified_tribes"){
+                socket.emit('server_response', {response: "<b>The currently Verfied Tribes in Habari are - Habari Sports, Habari Music & Habari News"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "where_contacts_come_from"){
+                socket.emit('server_response', {response: "Your contacts are people on your contact list who are already on Habari and who have accepted your connection request. You can as well send a download link to poeple who are not on Habari and later on add them as a Habari contact."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_signout"){
+                socket.emit('server_response', {response: "To sign out from Habari, simply go to the profile page and scroll all the way down. There, you will see the sign out button"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_exit"){
+                socket.emit('server_response', {response: "To exit the app, simply press the home button on your phone"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_become_merchant"){
+                socket.emit('server_response', {response: "To become a merchant you have to contact the Habari team to begin the verification process and if successful, you are given your Habari merchant credentials else, you can contact Habari team to put your deals for sale in the market square."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "merchant_definition"){
+                socket.emit('server_response', {response: ""});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_contact_merchant"){
+                socket.emit('server_response', {response: "You can contact a merchant through our internal messaging system by clicking on the link 'Contact Merchant' located on any of the deal item pages. You can also check the merchant’s tribe page to see if they have included additional contact information in their tribe."});
                 chooser(selector)
               }
             }
