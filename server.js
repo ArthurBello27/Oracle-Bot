@@ -452,6 +452,10 @@ function crawl_google(search_query){
                 socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_coin_front.png'><img style='width: 120px; margin-bottom: 8px' src='habari_coin_back.png'></span><br>HGC(Habari Gold Coins) are activity and transaction based virtual currencies and rewards with a limited amount available for in-app purchases at discounted prices."});
                 chooser(selector)
               }
+              else if (data.entities.intent[0].value == "coins_use"){
+                socket.emit('server_response', {response: "<b>Coins can be used in various ways:</b><br>1. Make purchases from Merchants at discounted prices.<br>2. Make purchases from virtual shops to buy virtual objects e.g. virtual roses, themes.<br>3. Donate to non-profit merchants.<br>4. HGC can be used to play games e.g. challenge a king, game of chance<br>5. Nullify wrong doings i.e. give out HGC instead of points deduction for certain mistakes."});
+                chooser(selector)
+              }
               else if (data.entities.intent[0].value == "how_to_earn_coins"){
                 socket.emit('server_response', {response: "<b>Coins can be earned in various ways:</b><br>1. By going up in the Habari hierarchy<br>2. Performing card transactions |   &#8358;0 to &#8358;500 airtime = 2,000 HGC, > &#8358;500 = 5,000 HGC and transfers = 10,000 HGC.<br>3. Transfer of HGC among users within Habari<br>4. Playing and winning different Habari games<br>5. Earning the Don badge. Don badge = 3000 HGC<br>6. Bonus HGC can also be given randomly to users on a certain hierarchy. For example, there can be a promo where all warriors are rewarded with X HGC"});
                 chooser(selector)
