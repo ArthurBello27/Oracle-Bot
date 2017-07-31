@@ -8,7 +8,7 @@ function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
 
-var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "cock", "pussy", "asshole", "fag", "bastard", "slut", "nigg" ]
+var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg" ]
 var $ 
 var ip;
 var request = require('request'); //Module for requesting web pages
@@ -118,7 +118,7 @@ function getweather (day) {
   socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
 
   //This first request is used to get the ip address, location and lat & long of the user.
-  //It will most likely be changed.
+  //It will most likely be changed as this will not get the users location on a phone.
   $.getJSON('http://ipinfo.io', function(dataA){
     //Once the lat & long have been received, another request is made to a weather API so we can get the weather
     //for the specific location for the specific day
@@ -126,9 +126,10 @@ function getweather (day) {
       type: 'GET',
       dataType: 'json',
       contentType: 'application/json',
+      //dataA.loc is where the location of the user goes
       url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json",
       success: function(data) {
-        console.log(data.data.weather)
+        console.log("we good", data.data.weather)
         if (day == "today"){
           var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
           +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but feels like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
@@ -142,7 +143,7 @@ function getweather (day) {
         }
       },
       error: function(err){
-        console.log(err);
+        console.log("error with weather", err.statusCode);
       }
 
     });
@@ -167,7 +168,7 @@ function crawl_google(search_query){
         //This for loop there splits the text by double spaces in attempt to access the main text
           if(!che(this).text().split("  ")[iteration].startsWith("\n") && !che(this).text().split("  ")[iteration].startsWith(" ") && che(this).text().split("  ")[iteration]){ //This if statement then checks each item in the newly created array to find the first bit of text that doesnt start with a space or new line
             description_array.push(che(this).text().split("  ")[iteration]);//Once the text is found, it is pushed into the 'description_array' array.
-            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"<br><span style='font-size:10px;'>Search Powered by DuckDuckGo <img style='width: 13px' src='DuckDuckGo_Logo.svg.png'></span></p></div>"});
+            socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"<br></p></div>"});
             break;
           }
         }
@@ -241,7 +242,7 @@ function crawl_google(search_query){
             else if('oracle_info' in data.entities){
               //The value of the entity is then checked to know the specific response to give.
               if (data.entities.oracle_info[0].value == "name") {
-                socket.emit('server_response', {response: "My name is Habari"});
+                socket.emit('server_response', {response: "My name is HabOracle"});
               }
               else if (data.entities.oracle_info[0].value == "age") {
                 socket.emit('server_response', {response: "My age is actually unknown&#129300;"});
@@ -312,11 +313,11 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "village_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_village.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_village.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation&#128232."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "village_types"){
-                socket.emit('server_response', {response: "There are no specific types of villages."});
+                socket.emit('server_response', {response: "There are no specific types of villages&#x1F937&#x200D&#x2642&#xFE0F."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "clan_definition"){
@@ -340,7 +341,7 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "who_can_use_habari"){
-                socket.emit('server_response', {response: "Anyone 13 and above can use Habari"});
+                socket.emit('server_response', {response: "Anyone 13 and above can use Habari&#x1F601"});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "clan-tribe_tribe"){
@@ -372,15 +373,15 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "habari_functions"){
-                socket.emit('server_response', {response: "Habari's core functions are individual/corporate bloging, video/audio chatting, music listening, requesting/sending money & purchasing discounted items "});
+                socket.emit('server_response', {response: "Habari's core functions are individual/corporate bloging, video/audio chatting, music listening, requesting/sending money & purchasing discounted items."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "multiple_device_info"){
-                socket.emit('server_response', {response: "Multiple device login will be allowed with phone number authentication."});
+                socket.emit('server_response', {response: "Multiple device login will be allowed with phone number authentication&#x1F4F1&#x1F4F2."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "clan_lifespan_info"){
-                socket.emit('server_response', {response: "Clans will have expiry dates, after which if there’s no activity and several notifications sent to the admin of the clan, it will be deleted."});
+                socket.emit('server_response', {response: "Clans will have expiry dates&#x23F0, after which if there’s no activity and several notifications sent to the admin of the clan, it will be deleted."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "clan_deletion_info"){
@@ -500,7 +501,7 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "types_of_verified_tribes"){
-                socket.emit('server_response', {response: "<b>The currently Verfied Tribes in Habari are - Habari Sports, Habari Music & Habari News"});
+                socket.emit('server_response', {response: "<b>The currently Verfied Tribes in Habari are - Habari Sports, Habari Music & Habari News."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "where_contacts_come_from"){
@@ -508,11 +509,11 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "how_to_signout"){
-                socket.emit('server_response', {response: "To sign out from Habari, simply go to the profile page and scroll all the way down. There, you will see the sign out button"});
+                socket.emit('server_response', {response: "To sign out from Habari, simply go to the profile page and scroll all the way down. There, you will see the sign out button."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "how_to_exit"){
-                socket.emit('server_response', {response: "To exit the app, simply press the home button on your phone"});
+                socket.emit('server_response', {response: "To exit the app, simply press the home button on your phone."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "how_to_become_merchant"){
@@ -525,6 +526,46 @@ function crawl_google(search_query){
               }
               else if (data.entities.intent[0].value == "how_to_contact_merchant"){
                 socket.emit('server_response', {response: "You can contact a merchant through our internal messaging system by clicking on the link 'Contact Merchant' located on any of the deal item pages. You can also check the merchant’s tribe page to see if they have included additional contact information in their tribe."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_access_profile"){
+                socket.emit('server_response', {response: "To access your profile, tap on the Habari Button to display the five fingers of Habari then tap on the last finger with your picture (or avatar if you’ve not uploaded any picture) to access your profile page."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_view_notifications"){
+                socket.emit('server_response', {response: "To view notifications, tap on the Habari Button to display the five fingers of Habari then tap on the second finger with a bell icon."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_import_contacts"){
+                socket.emit('server_response', {response: "To import contacts, tap on Settings > Import Contacts then follow the instructions to import contacts."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_add_contacts"){
+                socket.emit('server_response', {response: "To add contacts, tap on the Habari Button to display the five fingers of Habari then tap on the fourth finger to display your Habari Contacts. Next, tap on my contacts to view all contacts on phone and then tap the + icon to send a friend request to the user"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_view_my_groups"){
+                socket.emit('server_response', {response: "To view groups you are in, go to your profile page then tap on the group icon to arrive at the group page"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_create_groups"){
+                socket.emit('server_response', {response: "To create a group, go to your profile page then tap on the group icon to arrive at the group page. After that, click on the 'Create A Clan' button"});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_add_person_to_group"){
+                socket.emit('server_response', {response:"To add someone to a group, go to your profile page then tap on the group icon snd select the group you would like to add someone to. Tap the '+' button at the top of the page then choose user(s) from your list to invite to the group and select Add."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_leave_groups"){
+                socket.emit('server_response', {response:"To leave a group, firstly, open the group in which you are a member. Go to the group profile page by tapping on the group profile picture at the top of the screen. Tap on the X icon at the top left corner of the screen and then tap on 'Exit Group'."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "how_to_remove_member_from_group"){
+                socket.emit('server_response', {response:"To remove a member from a group (as an administrator&#128273), firstly, open the group in which you are an administrator. Go to the group profile page by tapping on the group profile picture at the top of the screen. Tap on the X icon next to the user you want to delete from the group and then finally tap on 'Remove from group'."});
+                chooser(selector)
+              }
+              else if (data.entities.intent[0].value == "number_change_info"){
+                socket.emit('server_response', {response: "Your phone number is your account number on Habari and cannot be changed&#128584;"});
                 chooser(selector)
               }
             }
