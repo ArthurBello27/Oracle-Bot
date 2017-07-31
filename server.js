@@ -87,10 +87,10 @@ io.sockets.on('connection', function (socket) {
   //They all have a 2 second delay
   function chooser(selector){
     if(selector==1){
-      setTimeout(function () {socket.emit('server_response', {response: "Feel free to ask any more questions."});}, 2000);
+      setTimeout(function () {socket.emit('server_response', {response: "Feel free to ask any more questions about the Habari kingdom."});}, 2000);
     }
     else if(selector == 2){
-      setTimeout(function () {socket.emit('server_response', {response: "More questions? Feel free to ask."});}, 2000);
+      setTimeout(function () {socket.emit('server_response', {response: "More questions about the Habari kingdom? Feel free to ask."});}, 2000);
     }
     else if(selector == 3){
       setTimeout(function () {socket.emit('server_response', {response: "Anything else? Feel free to ask."});}, 2000);
@@ -449,7 +449,7 @@ function crawl_google(search_query){
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "habari_coins_defintion"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_coin_front.png'><img style='width: 120px; margin-bottom: 8px' src='habari_coin_back.png'></span><br>HGC(Habari Gold Coins) are activity and transaction based virtual currencies and rewards with a limited amount available for in-app purchases at discounted prices."});
+                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='hcf.png'><img style='width: 120px; margin-bottom: 8px' src='hcb.png'></span><br>HGC(Habari Gold Coins) are activity and transaction based virtual currencies and rewards with a limited amount available for in-app purchases at discounted prices."});
                 chooser(selector)
               }
               else if (data.entities.intent[0].value == "coins_use"){
