@@ -37,6 +37,13 @@ var EntrySchema = new mongoose.Schema({
 })
 var Entry = mongoose.model('all_entries', EntrySchema);
 
+// mongoose.connect('mongodb://localhost/gtchatbot');
+// var EntrySchema = new mongoose.Schema({
+//  category: String,
+//  value: String
+// })
+// var Entry = mongoose.model('all_entries', EntrySchema);
+
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
 // require bodyParser since we need to handle post data for adding a user
@@ -57,7 +64,11 @@ app.get('/home', function(req, res) {
  res.render('home');
 })
 app.get('/add_to_bot', function(req, res) {
- res.render('add_to_bot');
+  Entry.find({}, function (err, entries){
+        // loads a view called 'user.ejs' and passed the user object to the view!
+        res.render('add_to_bot', {entries, entries});
+    }).sort({_id:-1})
+ 
 })
 app.post('/make_entry', function(req, res) {
   console.log("POST DATA", req.body);
@@ -69,8 +80,15 @@ app.post('/make_entry', function(req, res) {
         console.log('something went wrong');
       } else { // else console.log that we did well and then redirect to the root route
         console.log('successfully added a user!');
-        res.redirect('/');
+        // res.redirect('/');
       }
+    })
+})
+app.post('/update_entry', function(req, res) {
+  console.log("POST DATA", req.body);
+  console.log("updating");
+  Entry.update({category: req.body.old_category}, {category: req.body.new_category, value: req.body.new_value}, function (err, entry){
+        res.redirect('/');
     })
 })
 
@@ -141,6 +159,7 @@ io.sockets.on('connection', function (socket) {
     socket.emit('server_response', {response: "A Clan is a small group of people. A Clan name cannot be changed. Once the population of a Clan exceeds a certain limit, the Clan becomes a Village or Tribe."});
   })
 //The function below is used to get weather for either 'today' or 'tomorrow'
+
 function getweather (day) {
   socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
 
@@ -149,6 +168,7 @@ function getweather (day) {
   $.getJSON('http://ipinfo.io', function(dataA){
     //Once the lat & long have been received, another request is made to a weather API so we can get the weather
     //for the specific location for the specific day
+    
     $.ajax({
       type: 'GET',
       dataType: 'json',
@@ -170,7 +190,10 @@ function getweather (day) {
         }
       },
       error: function(err){
-        console.log("error with weather", err.statusCode);
+        if (threetries < 4){
+          getweather (day);
+        }
+        threetries += 1;
       }
 
     });
@@ -236,9 +259,11 @@ function crawl_google(search_query){
             //The above if statement will be true if the sentence conatins 'weather' or if the weather flag is still set to true. 
               if (weather_flag == false){//If the weather flag is false, which means the user is just asking about weather, we check if the have specified a day
                 if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")) { //If the user has specififed to get weather for today, the getweather function will be ran
+                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
                   getweather("today");
                 }
                 else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")) {//If the user has specififed to get weather for tomorrow, the getweather function will be ran
+                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
                   getweather("tomorrow");
                 }
                 else {//If the user hasn't specified the day, the chatbot will ask them which day they want the weather for
@@ -251,10 +276,12 @@ function crawl_google(search_query){
                 
                 if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
                   getweather("today");
+                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
                   weather_flag = false
                 }
                 else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
                   getweather("tomorrow");
+                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
                   weather_flag = false
                 }
                 else{
@@ -337,7 +364,6 @@ function crawl_google(search_query){
             //All the values and entities used are must be the same as those specified in Wit.ai
             else if(Object.keys(data.entities) == "intent"){
               var ind
-              console.log("wit came back");
               //Detailed explanation: The database used in the project is MongoDB, which is ideal for NodeJS apps;
               //The collection used below is the 'entry' collection. It has two columns: category & value.
               //The category column is the column which must match the category that you have specified in Wit.ai
@@ -347,7 +373,6 @@ function crawl_google(search_query){
               //the value contains an image that will be sent to the user as well as text. You may also notice words like '&#x61736'
               //These words are unicode for Emojis and you can google more info on them.
               Entry.find({},function (err, entry){ //This function will get every single entry from our database
-                console.log(entry)
                   for (ind in entry){ //This for loop will loop through each funciton
                     if (entry[ind].category == data.entities.intent[0].value){  //This if statement will then check to see if the category is the same as the one which Wit.ai has returned back after analyzing the users text
                       socket.emit('server_response', {response: entry[ind].value}); //It will then send the value you have specified for that category back to the user through the Bot.

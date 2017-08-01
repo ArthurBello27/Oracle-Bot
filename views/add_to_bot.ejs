@@ -1,11 +1,17 @@
 <html>
 	<head>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<link href="https://fonts.googleapis.com/css?family=Lato:300" rel="stylesheet">
 		<style>
-			body{text-align: center; padding: 30px; font-family: Verdana}
+			body{text-align: center; padding: 30px; font-family: lato}
 			img {width: 100px;}
-			input{height: 50px; width: 700px; line-height: 50px; font-size: 20px; text-align: center;}
+			input{height: 50px; width: 700px; line-height: 50px; font-size: 20px; text-align: center; font-family: lato}
+			.table_input{height: 50px; width: 700px; line-height: 50px; font-size: 20px; text-align: center; border:none;}
 			button{border: none; background: firebrick; color: white; font-size: 20px; padding: 10px 25px 10px 25px;}
+			td, th {text-align: center; padding: 10px;}
+			td {border: 2px solid silver}
+			textarea {font-size: 15px; border: none}
+			table {width: 100%;}
 		</style>
 	</head>
 	<body><br><br><br><br><br><br><br>
@@ -22,7 +28,50 @@
 		<p> Before adding any category or value, please go to Wit and ensure that you have <br>proper added your intended category in the 'Understanding' tab<br>It is also highly recommended that you use underscores<br> instead of spaces when typing the category</p>
 		<p> Once done, simply type in the same category in the field above and <br>specify the value you want the bot to return.</p>
 		<p>The value may also contain HTML</p>
+		<p><span style="color: red">NOTE!!<span>: No categories can bear the same name</p>
+		<h2>Edit / Delete entries</h2>
+		  <table>
+		  	<tr>
+			    <th>S/N</th>
+			    <th>Category</th>
+			    <th>Value</th>
+			  </tr>
+		     <% var count = 1; for (var x in entries) { %>
+		     <% if (entries[x].value != undefined){ %>
+		      <td><%= count %></td><td class="categories"><input class="old_category" name="old_category" hidden value=<%= entries[x].category %>><input class="table_input new_category" name="new_category" value=<%= entries[x].category %>></td><td class="textareas"><textarea class="new_value" name="new_value" cols=65 rows=7> <%= entries[x].value %></textarea></td>
+		     </tr>
+		     <%count +=1 } %>
+		     <% } %>
+		  </table>
 		<script>
+		$('.table_input').change(function(){
+			$(this).parent().css("border", "2px solid mediumseagreen")
+		})
+		$('textarea').change(function(){
+			$(this).parent().css("border", "2px solid mediumseagreen")
+		})
+		$('.table_input').focusout(function(){
+			$.post("/update_entry",
+		    {
+		        new_category: $(this).val(),
+		        new_value: $(this).parent().siblings('.textareas').find('textarea').val(),
+		        old_category: $(this).siblings('.old_category').val()
+		    },
+		    function(data, status){
+		    	console.log(status)
+		    });
+		})
+		$('textarea').focusout(function(){
+		    $.post("/update_entry",
+		    {
+		        new_category: $(this).parent().siblings('.categories').find('.new_category').val(),
+		        new_value: $(this).val(),
+		        old_category: $(this).parent().siblings('.categories').find('.old_category').val()
+		    },
+		    function(data, status){
+		    	console.log(status)
+		    });
+		})
 			$("button").click(function(){
 				if($('#category').val() != "" && $('#value').val() != ""){
 				    $.post("/make_entry",
