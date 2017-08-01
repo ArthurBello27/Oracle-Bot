@@ -28,21 +28,21 @@ var path = require("path");
 // require express and create the express app
 var express = require("express");
 var mongoose = require('mongoose');
-var config=JSON.parse(process.env.APP_CONFIG);
-var mongoPassword = 'Arthurmide98';
-mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
-var EntrySchema = new mongoose.Schema({
- category: String,
- value: String
-})
-var Entry = mongoose.model('all_entries', EntrySchema);
-
-// mongoose.connect('mongodb://localhost/gtchatbot');
+// var config=JSON.parse(process.env.APP_CONFIG);
+// var mongoPassword = 'Arthurmide98';
+// mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
 // var EntrySchema = new mongoose.Schema({
 //  category: String,
 //  value: String
 // })
 // var Entry = mongoose.model('all_entries', EntrySchema);
+
+mongoose.connect('mongodb://localhost/gtchatbot');
+var EntrySchema = new mongoose.Schema({
+ category: String,
+ value: String
+})
+var Entry = mongoose.model('all_entries', EntrySchema);
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
@@ -75,13 +75,8 @@ app.post('/make_entry', function(req, res) {
   var newEntry = new Entry({category: req.body.category, value: req.body.value});
     // try to save that new user to the database (this is the method that actually inserts into the db) and run a callback function with an error (if any) from the operation.
     newEntry.save(function(err) {
-      // if there is an error console.log that something went wrong!
-      if(err) {
-        console.log('something went wrong');
-      } else { // else console.log that we did well and then redirect to the root route
-        console.log('successfully added a user!');
-        // res.redirect('/');
-      }
+        res.redirect('/');
+      
     })
 })
 app.post('/update_entry', function(req, res) {
@@ -92,6 +87,13 @@ app.post('/update_entry', function(req, res) {
     })
 })
 
+app.post('/remove_entry', function(req, res) {
+  console.log("POST DATA", req.body);
+  console.log("updating");
+  Entry.remove({category: req.body.category}, function (err, user){
+    res.redirect('/');
+})
+})
 //This is the page where the Habari Oracle is contained
 app.get('/chatInterface', function(req, res) {
  res.render('chat');

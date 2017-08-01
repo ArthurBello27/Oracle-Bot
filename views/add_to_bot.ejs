@@ -38,7 +38,7 @@
 			  </tr>
 		     <% var count = 1; for (var x in entries) { %>
 		     <% if (entries[x].value != undefined){ %>
-		      <td><%= count %></td><td class="categories"><input class="old_category" name="old_category" hidden value=<%= entries[x].category %>><input class="table_input new_category" name="new_category" value=<%= entries[x].category %>></td><td class="textareas"><textarea class="new_value" name="new_value" cols=65 rows=7> <%= entries[x].value %></textarea></td>
+		      <td><%= count %></td><td class="categories"><input class="old_category" name="old_category" hidden value=<%= entries[x].category %>><input class="table_input new_category" name="new_category" value=<%= entries[x].category %>></td><td class="textareas"><textarea class="new_value" name="new_value" cols=60 rows=7> <%= entries[x].value %></textarea></td><td class="delete" style="color:red; cursor: pointer; font-weight:800">X</td>
 		     </tr>
 		     <%count +=1 } %>
 		     <% } %>
@@ -72,19 +72,28 @@
 		    	console.log(status)
 		    });
 		})
-			$("button").click(function(){
-				if($('#category').val() != "" && $('#value').val() != ""){
-				    $.post("/make_entry",
-				    {
-				        category: $('#category').val(),
-				        value: $('#value').val()
-				    },
-				    function(data, status){
-				    	$('#status').text("Succesfully added")
-				        // alert("Status: " + status);
-				    });
-				}
-			});
+		$('.delete').click(function(){
+			$.post("/remove_entry",
+		    {
+		        category: $(this).siblings('.categories').find('.old_category').val()
+		    },
+		    function(data, status){
+		    	location.reload()
+		    });
+		})
+		$("button").click(function(){
+			if($('#category').val() != "" && $('#value').val() != ""){
+			    $.post("/make_entry",
+			    {
+			        category: $('#category').val(),
+			        value: $('#value').val()
+			    },
+			    function(data, status){
+			    	location.reload()
+			        // alert("Status: " + status);
+			    });
+			}
+		});
 		</script>
 	</body>
 </html>
