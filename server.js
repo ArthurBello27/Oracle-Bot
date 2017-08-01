@@ -27,6 +27,16 @@ var weather_flag = false; //Flag which is set to true if user enters a sentence 
 var path = require("path");
 // require express and create the express app
 var express = require("express");
+var mongoose = require('mongoose');
+var config=JSON.parse(process.env.APP_CONFIG);
+var mongoPassword = 'Arthurmide98';
+mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
+var EntrySchema = new mongoose.Schema({
+ category: String,
+ value: String
+})
+var Entry = mongoose.model('all_entries', EntrySchema);
+
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
 // require bodyParser since we need to handle post data for adding a user
@@ -45,6 +55,23 @@ app.get('/', function(req, res) {
 })
 app.get('/home', function(req, res) {
  res.render('home');
+})
+app.get('/add_to_bot', function(req, res) {
+ res.render('add_to_bot');
+})
+app.post('/make_entry', function(req, res) {
+  console.log("POST DATA", req.body);
+  var newEntry = new Entry({category: req.body.category, value: req.body.value});
+    // try to save that new user to the database (this is the method that actually inserts into the db) and run a callback function with an error (if any) from the operation.
+    newEntry.save(function(err) {
+      // if there is an error console.log that something went wrong!
+      if(err) {
+        console.log('something went wrong');
+      } else { // else console.log that we did well and then redirect to the root route
+        console.log('successfully added a user!');
+        res.redirect('/');
+      }
+    })
 })
 
 //This is the page where the Habari Oracle is contained
@@ -162,10 +189,10 @@ function crawl_google(search_query){
       //Basically, the 'che' variable is the same as the dollar sign ($) in JQuery
       var iteration; //This variable is the index of the iteration of a certain array.
 
-      che('#zero_click_abstract').each(function(i, element){ //This function loops through the "zero_click_abstract" element, which is located in the HTML gotten from the DuckDuckGo search. There will most likely only be one "zero_click_abstract"
+      che('#zero_click_abstract').each(function(i, element){ //This function loops through the "zero_click_abstract" element, which is located in the HTML gotten from the DuckDuckGo search. There will most likely only be one "zero_click_abstract" NOTE!!! is there is ever an error with this section, the simple solution would be to print out the html received from duckduckgo by doing console.log(html) and checking if the ID/Class name has been changed
 
         for (iteration in che(this).text().split("  ")){ //For some reason, The text content of the "zero_click_abstract" element and some other HTML elements from the returned search query contain numberous spaces and newlines
-        //This for loop there splits the text by double spaces in attempt to access the main text
+        //This for loop there splits the text by double spaces in attempt to access the main text 
           if(!che(this).text().split("  ")[iteration].startsWith("\n") && !che(this).text().split("  ")[iteration].startsWith(" ") && che(this).text().split("  ")[iteration]){ //This if statement then checks each item in the newly created array to find the first bit of text that doesnt start with a space or new line
             description_array.push(che(this).text().split("  ")[iteration]);//Once the text is found, it is pushed into the 'description_array' array.
             socket.emit('didyoumean', {response: "<div class='chatbot'><p class='chatbotspan'>"+description_array[0]+"<br></p></div>"});
@@ -176,6 +203,7 @@ function crawl_google(search_query){
       //The if statement below checks to see if the 'description_array' is empty
       if (description_array.length == 0){ //In a situation where there is no 'zero click' information returned, the description array will be empty at this point.
         //So therefore, the first link and description gotten from the search are sent to the user.
+      //NOTE!!! is there is ever an error with this section, the simple solution would be to print out the html received from duckduckgo by doing console.log(html) and checking if the ID/Class name has been changed
         socket.emit('didyoumean', {response: "<a href='"+decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])+"'><div class='chatbot'><p class='chatbotspan'>"+che('.web-result .result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br></p></div></a>"});
       }
     });
@@ -308,270 +336,27 @@ function crawl_google(search_query){
             //This section houses all the available answers to questions on anything habari related. The entity is labelled as intent. We can basically take "intent" to mean "Habari App info" in a theoretical sense.
             //All the values and entities used are must be the same as those specified in Wit.ai
             else if(Object.keys(data.entities) == "intent"){
-              if (data.entities.intent[0].value == "merchant_bot_info"){
-                socket.emit('server_response', {response: "All merchants will have BOTs "});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "village_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_village.png'></span><br>A village is quite similar to a tribe. It is a large community of people with shared interests. The difference is that villages are private and new members can only be added by invitation&#128232."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "village_types"){
-                socket.emit('server_response', {response: "There are no specific types of villages&#x1F937&#x200D&#x2642&#xFE0F."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "clan_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_clan.png'></span><br>Clans are private groups created by users. When creating a clan (group), the admin of the clan must specify a unique name and clan category which cannot be changed"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "tribe_categories"){
-                socket.emit('server_response', {response: "There are currently 13 categories in Habari: Fashion, Health & Fitness, Books, Science, Travel, Sports, News, Politics, DIY(Do It Yourself), Music, Technology, Food & Movies/TV"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "name_change_info"){
-                socket.emit('server_response', {response: "A user cannot change clan name, username, tribe name or village name and certain names are reserved for featured tribes /merchants so users cannot use them during registration e.g. Shoprite, Slot, Guardian News etc."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "verified_tribe"){
-                socket.emit('server_response', {response: "A verified tribe is a tribe that is internally managed by Habari."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "featured_tribe"){
-                socket.emit('server_response', {response: "Featured tribes are tribes for selected merchants to advertise their products and services. Merchants will pay to be featured as tribes. These merchants can post offers on discounted products also called deals and general information about goods and services offered. Non-profit organization and charities can also be Featured tribes and all Habari users will be allowed to make donations on their pages."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "who_can_use_habari"){
-                socket.emit('server_response', {response: "Anyone 13 and above can use Habari&#x1F601"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "clan-tribe_tribe"){
-                socket.emit('server_response', {response: "A clan becomes a tribe after it attains X+ number of members and goes public. Whenever a clan attains the tribe status, members of the parent tribe they fall under will be notified of the change and asked if they’ll like to be part of the new tribe"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "tribe_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_tribe.png'></span><br>Tribes are large public community of people that share similar interests, users are introduced to tribes during onboarding and can join more tribes afterwards."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "tribe_types"){
-                socket.emit('server_response', {response: "There are 3 types of tribes: verified tribes, 'clan-tribe' tribes and featured tribes."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "habari_info"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='habari_logo_colored.png'></span><br>Habari is a virtual platform that connects people with shared interests and enables them to discover new interests. Interact with friends, create Tribes and populate them, share information and grow within the Habari Kingdom. Become a Prince or Princess and have a shot at becoming a Habari ruler and get the title, perks and a chance to sit on a real Habari throne. Trade to earn gold coins, which can be redeemed within our virtual world. Make monetary transactions and payments from Habari to your real world contacts and merchants."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "habari_benefits"){
-                socket.emit('server_response', {response: "Habari offers a wide range of benefits such as: <br><span style='font-size:30px'>Discounts on all merchant deals</span><br><span style='font-size:30px'>Rewards with Habari Gold Coins and no charges for transactions on Habari</span><br><span style='font-size:30px'>Individual and business marketing</span><br><span style='font-size:30px'>Fun and engaging one stop platform for socializing, ecommerce, gaming, business and news. </span>"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "merchant_tribe_post_info"){
-                socket.emit('server_response', {response: "Merchant and Verified tribes’ posts are controlled, only an admin can post in these tribes. Followers can only like, share, comment and or buy posts. While ‘clan - tribe’ tribes have the option to enable or disable post by tribe members."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "who_can_create_tribes"){
-                socket.emit('server_response', {response: "A tribe can be created by Habari Admin and, existing clans with X number of active members can rise to become a tribe."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "habari_functions"){
-                socket.emit('server_response', {response: "Habari's core functions are individual/corporate bloging, video/audio chatting, music listening, requesting/sending money & purchasing discounted items."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "multiple_device_info"){
-                socket.emit('server_response', {response: "Multiple device login will be allowed with phone number authentication&#x1F4F1&#x1F4F2."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "clan_lifespan_info"){
-                socket.emit('server_response', {response: "Clans will have expiry dates&#x23F0, after which if there’s no activity and several notifications sent to the admin of the clan, it will be deleted."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "clan_deletion_info"){
-                socket.emit('server_response', {response: "Clans can be deleted by their admin but tribes cannot be deleted."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "clan_creation_info"){
-                socket.emit('server_response', {response: "Users cannot create a clan with an existing clan or tribe name."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "village_tribe_difference_info"){
-                socket.emit('server_response', {response: "A village is a private tribe where members join by invitation unlike a tribe which is public and anyone can join. Going public makes it faster for a transitioned clan to get discovered and grow to have more followers as users can easily search and add themselves to the tribe instead of requesting to be added."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "types_of_leaderboards"){
-                socket.emit('server_response', {response: "The two leaderboards in Habari are Kingdom Leaderboards and Tribe Leaderboards."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "kingdom_leaderboard_definition"){
-                socket.emit('server_response', {response: "A Kingdom Leaderboard is place where all of Habari's activities are summarized e.g. total number of prince/princesses in the kingdom, total number of tribes."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "tribe_leaderboard_definition"){
-                socket.emit('server_response', {response: "This contains the number of people in a tribe and name of the Tribe leaders i.e. the member of the tribe with the most influence (likes, shares, or comments for user’s posts). Members of tribes will be notified when they have a new tribe’s leader."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "habari_hierarchy_info"){
-                socket.emit('server_response', {response: "<img src='kinsman.png' style='width:40px'>Kinsman: 0 - 4,000 Points<br><img src='farmer.png' style='width:40px'>Farmer: >4,000 - 9,000 Points<br><img src='hunter.png' style='width:40px'>Hunter: >9,000 - 15,000 Points<br><img src='warrior.png' style='width:40px'>Warrior: >15,000 - 23,000 Points<br><img src='nobleman.png' style='width:40px'>Nobleman: >23,000 - 33,000 Points<br><img src='elder.png' style='width:40px'>Elder: >33,000 - 48,000 Points<br><img src='chief.png' style='width:40px'>Chief: >48,000 - 70,000 Points<br><img src='prince.png' style='width:40px'>Prince/Princess: >=70,000 Points<br><img src='emperor.png' style='width:40px'>Emperor: Competitive Title"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "kinsman_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='kinsman.png'></span><br>This is an entry level title for a user who has successfully created an account and rewarded with 100 pts. 0 - 4,000 Points"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "farmer_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='farmer.png'></span><br>A Farmer is a Kinsman who has earned additional 5,000 points. 4,000 - 9,000 Points"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "hunter_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='hunter.png'></span><br>A Hunter is a Farmer who has earned additional 6,000 points. 9,000 - 15,000 Points"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "warrior_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>A Warrior is a Hunter who has earned additional 8,000 points. 15,000 - 23,000 Points"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "elder_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='warrior.png'></span><br>An Elder is a Nobleman who has earned additional 15,000 points. 33,000 - 48,000 Points "});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "chief_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='chief.png'></span><br>A Chief is an Elder who has earned additional 22,000 points. 48,000 - 70,000 Points"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "prince_princess_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='prince.png'></span><br>A Prince/Princess is a Chief who has earned additional 30,000 points. >=70,000 Points"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "habari_point_system"){
-                socket.emit('server_response', {response: "The point system in Habari allows users in move between the different hierarchies. Points are background activity based rewards that allows users to move in hierarchy. Every user has a point meter system to track their hierarchy progression in the Habari kingdom"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "emperor_defintion"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='emperor.png'></span><br>This is the highest title in the Habari Kingdom, it is a competitive title as there can be only one emperor at any given time who can be dethroned by any of the existing prince or princesses with a minimum of 100,000 HGC and an additional 5,000 points more than the reigning emperor. Some of the perks of being Emperor are:<br>Weekly airtime<br>Instant gifts (promotional items, physical gold coins, lapel pins)<br>Exclusive parties<br>Points<br>Habari Gold Coins<br>Merchant sponsored prizes"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "habari_coins_defintion"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 120px; margin-bottom: 8px' src='hcf.png'><img style='width: 120px; margin-bottom: 8px' src='hcb.png'></span><br>HGC(Habari Gold Coins) are activity and transaction based virtual currencies and rewards with a limited amount available for in-app purchases at discounted prices."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "coins_use"){
-                socket.emit('server_response', {response: "<b>Coins can be used in various ways:</b><br>1. Make purchases from Merchants at discounted prices.<br>2. Make purchases from virtual shops to buy virtual objects e.g. virtual roses, themes.<br>3. Donate to non-profit merchants.<br>4. HGC can be used to play games e.g. challenge a king, game of chance<br>5. Nullify wrong doings i.e. give out HGC instead of points deduction for certain mistakes."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_earn_coins"){
-                socket.emit('server_response', {response: "<b>Coins can be earned in various ways:</b><br>1. By going up in the Habari hierarchy<br>2. Performing card transactions |   &#8358;0 to &#8358;500 airtime = 2,000 HGC, > &#8358;500 = 5,000 HGC and transfers = 10,000 HGC.<br>3. Transfer of HGC among users within Habari<br>4. Playing and winning different Habari games<br>5. Earning the Don badge. Don badge = 3000 HGC<br>6. Bonus HGC can also be given randomly to users on a certain hierarchy. For example, there can be a promo where all warriors are rewarded with X HGC"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_earn_points"){
-                socket.emit('server_response', {response: "<b>Points can be earned through the following ways:</b><br>Onboarding<br>Adding a profile picture (1st time)<br>Updating status (1st time)<br>Adding a card (1st time)<br>Adding a friend<br>Create a group with more than 3 people existing for over 72 hours<br>Join a tribe<br> Joining a Tribe<br> Chatting with anyone/group<br> Public posts in Tribes<br>Liking pictures<br> Receiving likes<br>Posts getting up to Moments<br>Funding a wallet<br>Purchasing Airtime<br>Transfers<br>Sharing Posts<br>Clan moving up to a Tribe<br>Buying Habari Gold Coins<br>Commenting on posts<br>Buying deals<br>Downloading playlists<br>Challenges"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "demotion"){
-                socket.emit('server_response', {response: "<b>A user can be demoted&#x2B07 in hierarchy after 4 weeks of inactivity in Habari. The number of points deducted depends on a user’s hierarchy. If a user is new to a tribe and remains inactive for over 8 weeks, he/she will be exiled from that tribe."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "badges_definition"){
-                socket.emit('server_response', {response: "<span class='img_span'><img style='width: 100px; margin-bottom: 8px' src='alpha.png'><img style='width: 100px; margin-bottom: 8px' src='baller.png'><img style='width: 100px; margin-bottom: 8px' src='socialite.png'><img style='width: 100px; margin-bottom: 8px' src='challenger.png'><img style='width: 100px; margin-bottom: 8px' src='buzz.png'></span><br>Badges are an app-wide, activity based gratification system. When a user receives a badge, it’s added to their profile and they can also share it within their clans, tribes, and outside the application. There are various types of badges"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "types_of_badges"){
-                socket.emit('server_response', {response: "<b>The following are the types of badges available in Habari and their meanings:</b><br><img src='newbie.png' style='width:40px'>Newbie - Complete registration / onboarding<br><img src='photophresh.png' style='width:40px'>Photophresh - Upload a profile picture for the first time<br><img src='swipe_master.png' style='width:40px'>Swipe Master - Add a card to profile for the first time<br><img src='thick_wallet.png' style='width:40px'>Thick Wallet - Add money to virtual wallet for the first time<br><img src='swagg.png' style='width:40px'>Swag - Customize profile for the first time<br><img src='buzz.png' style='width:40px'>Buzz - Share X number of posts outside the app<br><img src='socialite.png' style='width:40px'>Socialite - Add X number of friends on Habari<br><img src='citizen.png' style='width:40px'>Citizen - Spend a total of 100 hours on Habari<br><img src='chatterbox.png' style='width:40px'>Chatterbox - Comment on 30 different posts<br><img src='baller.png' style='width:40px'>Baller - Make X number of successful transactions in Habari<br><img src='alpha.png' style='width:40px'>Alpha - Create 5 active clans<br><br><img src='warrior_in_the_making.png' style='width:40px'>Warrior In The Making - Have 500 posts within tribes<br><img src='influencer.png' style='width:40px'>Influencer - 3,000 likes on posts in tribes<br><img src='explorer.png' style='width:40px'>Explorer - Post from 3 different states based on app geo-tag<br><img src='spectator.png' style='width:40px'>Spectator - Have a total of 500 likes on different posts<br><img src='squad.png' style='width:40px'>Squad - clan with a total of 5,000 messages.<br><img src='challenger.png' style='width:40px'>Challenger - User who has attempted to challenge the reigning Emporer.<br><img src='don.png' style='width:40px'>Don - The admin of a clan that becomes a tribe earns this badge.<br><img src='lord_of_the_beatz.png' style='width:40px'>Lord Of The Beatz - User has been active in the music tribe for 100 hours"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "deals_definition"){
-                socket.emit('server_response', {response: "Deals in Habari are discounted items put up by featured merchants for purchase. All items on Habari are on discount and are the best deals anywhere."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "types_of_deals"){
-                socket.emit('server_response', {response: "<b>There are 2 types of deals in Habari:</b><br>1. Regular deals by Merchants: These are deals placed in the market square by merchants for purchase by followers.<br>2. Mega deals: These deals are not up for sale, users can only win these items by bidding for them."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "marketsquare_definition"){
-                socket.emit('server_response', {response: "The Marketsquare is where all deals can be viewed by users regardless of merchants they follow. It will feature top trending deals and merchants based on likes / comments and all other deals being posted on Habari, including deals from the Habari team. It is only opened to registered and verified merchants with all posted deals also appearing on their follower’s page."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "purchased_deal_cancellation"){
-                socket.emit('server_response', {response: "You must contact the merchant directly for your cancellation request."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_place_bids"){
-                socket.emit('server_response', {response: "<b>To start bidding on Habari for Mega deals:</b><br>1. Recharge your account with some HGC<br>2. Choose an item that you would like to win<br>3. Start bidding to find the lowest unique bid<br>4. Place a single bid by paying a low subscription fee or place multiple bids at a higher subscription fee (fees are in HGC)"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "bidding_methods"){
-                socket.emit('server_response', {response: ""});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "sending_money_to_contacts"){
-                socket.emit('server_response', {response: "<b>The following transfer methods can be performed on Habari:</b><br><b>Habari P2P transfer:</b> A user can transfer HGC to Naira to any of his contacts by selecting the contact’s profile and choosing the transfer funds option under it.<br><b>Wallet to Account Transfer:</b> A user can move money from his wallet to his registered bank account card on Habari<br><b>Accoint to Account Transfers:</b> A user can move funds from his bank account card to another user’s bank account card on Habari.<br><b>Group Payments:</b> Members of a clan can make group payments by setting a goal, amount, timeframe. Afterwards, a bar will track progress of group goal and members who have paid towards goal."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "types_of_verified_tribes"){
-                socket.emit('server_response', {response: "<b>The currently Verfied Tribes in Habari are - Habari Sports, Habari Music & Habari News."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "where_contacts_come_from"){
-                socket.emit('server_response', {response: "Your contacts are people on your contact list who are already on Habari and who have accepted your connection request. You can as well send a download link to poeple who are not on Habari and later on add them as a Habari contact."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_signout"){
-                socket.emit('server_response', {response: "To sign out from Habari, simply go to the profile page and scroll all the way down. There, you will see the sign out button."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_exit"){
-                socket.emit('server_response', {response: "To exit the app, simply press the home button on your phone."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_become_merchant"){
-                socket.emit('server_response', {response: "To become a merchant you have to contact the Habari team to begin the verification process and if successful, you are given your Habari merchant credentials else, you can contact Habari team to put your deals for sale in the market square."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "merchant_definition"){
-                socket.emit('server_response', {response: ""});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_contact_merchant"){
-                socket.emit('server_response', {response: "You can contact a merchant through our internal messaging system by clicking on the link 'Contact Merchant' located on any of the deal item pages. You can also check the merchant’s tribe page to see if they have included additional contact information in their tribe."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_access_profile"){
-                socket.emit('server_response', {response: "To access your profile, tap on the Habari Button to display the five fingers of Habari then tap on the last finger with your picture (or avatar if you’ve not uploaded any picture) to access your profile page."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_view_notifications"){
-                socket.emit('server_response', {response: "To view notifications, tap on the Habari Button to display the five fingers of Habari then tap on the second finger with a bell icon."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_import_contacts"){
-                socket.emit('server_response', {response: "To import contacts, tap on Settings > Import Contacts then follow the instructions to import contacts."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_add_contacts"){
-                socket.emit('server_response', {response: "To add contacts, tap on the Habari Button to display the five fingers of Habari then tap on the fourth finger to display your Habari Contacts. Next, tap on my contacts to view all contacts on phone and then tap the + icon to send a friend request to the user"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_view_my_groups"){
-                socket.emit('server_response', {response: "To view groups you are in, go to your profile page then tap on the group icon to arrive at the group page"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_create_groups"){
-                socket.emit('server_response', {response: "To create a group, go to your profile page then tap on the group icon to arrive at the group page. After that, click on the 'Create A Clan' button"});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_add_person_to_group"){
-                socket.emit('server_response', {response:"To add someone to a group, go to your profile page then tap on the group icon snd select the group you would like to add someone to. Tap the '+' button at the top of the page then choose user(s) from your list to invite to the group and select Add."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_leave_groups"){
-                socket.emit('server_response', {response:"To leave a group, firstly, open the group in which you are a member. Go to the group profile page by tapping on the group profile picture at the top of the screen. Tap on the X icon at the top left corner of the screen and then tap on 'Exit Group'."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "how_to_remove_member_from_group"){
-                socket.emit('server_response', {response:"To remove a member from a group (as an administrator&#128273), firstly, open the group in which you are an administrator. Go to the group profile page by tapping on the group profile picture at the top of the screen. Tap on the X icon next to the user you want to delete from the group and then finally tap on 'Remove from group'."});
-                chooser(selector)
-              }
-              else if (data.entities.intent[0].value == "number_change_info"){
-                socket.emit('server_response', {response: "Your phone number is your account number on Habari and cannot be changed&#128584;"});
-                chooser(selector)
-              }
+              var ind
+              console.log("wit came back");
+              //Detailed explanation: The database used in the project is MongoDB, which is ideal for NodeJS apps;
+              //The collection used below is the 'entry' collection. It has two columns: category & value.
+              //The category column is the column which must match the category that you have specified in Wit.ai
+              //or whatever translation api you have used. It is also recommended to use underscores in place of spaces.
+              //The value column will be whatever you want the bot to send back to the user. You may notice that
+              //in this projects database, some value columns start with '<span>' or '<img>'. This is because
+              //the value contains an image that will be sent to the user as well as text. You may also notice words like '&#x61736'
+              //These words are unicode for Emojis and you can google more info on them.
+              Entry.find({},function (err, entry){ //This function will get every single entry from our database
+                console.log(entry)
+                  for (ind in entry){ //This for loop will loop through each funciton
+                    if (entry[ind].category == data.entities.intent[0].value){  //This if statement will then check to see if the category is the same as the one which Wit.ai has returned back after analyzing the users text
+                      socket.emit('server_response', {response: entry[ind].value}); //It will then send the value you have specified for that category back to the user through the Bot.
+                      chooser(selector)
+                    }
+                  }
+                  // res.render('user', {user: user});
+              })
+              
             }
       
     })
@@ -580,3 +365,5 @@ function crawl_google(search_query){
     
 })
 })
+
+
