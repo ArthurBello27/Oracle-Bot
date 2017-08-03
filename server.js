@@ -11,6 +11,7 @@ function existsInArray(array, item) {
 var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg" ]
 var $ 
 var ip;
+var hold_city; //This variable simply stores the city the user types when theyre checking for weather. Will be 'undefined' if user doesnt put any city
 var request = require('request'); //Module for requesting web pages
 var cheerio = require('cheerio'); //Module used for crawling
 require("jsdom-no-contextify").env("", function(err, window) { //JQuery module used to make Ajax calls in this app
@@ -28,21 +29,24 @@ var path = require("path");
 // require express and create the express app
 var express = require("express");
 var mongoose = require('mongoose');
-var config=JSON.parse(process.env.APP_CONFIG);
-var mongoPassword = 'Arthurmide98';
-mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
-var EntrySchema = new mongoose.Schema({
- category: String,
- value: String
-})
-var Entry = mongoose.model('all_entries', EntrySchema);
 
-// mongoose.connect('mongodb://localhost/gtchatbot');
+//Database use for server
+// var config=JSON.parse(process.env.APP_CONFIG);
+// var mongoPassword = 'Arthurmide98';
+// mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
 // var EntrySchema = new mongoose.Schema({
 //  category: String,
 //  value: String
 // })
 // var Entry = mongoose.model('all_entries', EntrySchema);
+
+//Database use for localhost
+mongoose.connect('mongodb://localhost/gtchatbot');
+var EntrySchema = new mongoose.Schema({
+ category: String,
+ value: String
+})
+var Entry = mongoose.model('all_entries', EntrySchema);
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
@@ -162,7 +166,8 @@ io.sockets.on('connection', function (socket) {
   })
 //The function below is used to get weather for either 'today' or 'tomorrow'
 
-function getweather (day) {
+function getweather (day, location) {
+  console.log(location)
   socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
 
   //This first request is used to get the ip address, location and lat & long of the user.
@@ -170,30 +175,46 @@ function getweather (day) {
   $.getJSON('http://ipinfo.io', function(dataA){
     //Once the lat & long have been received, another request is made to a weather API so we can get the weather
     //for the specific location for the specific day
-    
+    var make_url
+    if (location == undefined){
+      make_url = "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json"
+    }
+    else {
+      make_url = "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+location+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json"
+    }
+    console.log(make_url)
     $.ajax({
       type: 'GET',
       dataType: 'json',
       contentType: 'application/json',
       //dataA.loc is where the location of the user goes
-      url: "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json",
+      url: make_url,
       success: function(data) {
-        console.log("we good", data.data.weather)
-        if (day == "today"){
-          var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
-          +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but feels like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
-          +"Weather Description: "+data.data.current_condition[0].weatherDesc[0].value;
-          socket.emit('server_response', {response: weather_response});
+        // console.log("we good", data.data.weather)
+        if (data.data.nearest_area != undefined){
+          if (day == "today"){
+            var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
+            +"Temperature: "+data.data.current_condition[0].temp_C+"&#176;C but feels like "+data.data.current_condition[0].FeelsLikeC+"&#176;C<br>"
+            +"Weather Description: "+data.data.current_condition[0].weatherDesc[0].value;
+            socket.emit('server_response', {response: weather_response});
+          }
+          else {
+            var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
+            +"There's going to be a high of "+data.data.weather[1].maxtempC+"&#176;C  and a low of "+data.data.weather[1].mintempC+"&#176;C <br> Weather conditions from 9AM: "+data.data.weather[1].hourly[3].weatherDesc[0].value;
+            socket.emit('server_response', {response: weather_response});
+          }
         }
         else {
-          var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
-          +"There's going to be a high of "+data.data.weather[1].maxtempC+"&#176;C  and a low of "+data.data.weather[1].mintempC+"&#176;C <br> Weather conditions from 9AM: "+data.data.weather[1].hourly[3].weatherDesc[0].value;
-          socket.emit('server_response', {response: weather_response});
+          socket.emit('server_response', {response: "Sorry, I was unable to get the weather."});
         }
       },
+      //https://maps.googleapis.com/maps/api/place/autocomplete/json?input=Vict&types=country&key=AIzaSyCEYwHXlHLjerTAvqNSw6xMKVaoz587_B8
       error: function(err){
         if (threetries < 4){
           getweather (day);
+        }
+        else if(threetries >= 4){
+          socket.emit('server_response', {response: "Sorry, I was unable to get the weather."});
         }
         threetries += 1;
       }
@@ -248,51 +269,109 @@ function crawl_google(search_query){
     }
     //This variable is a random number that is used for the 'Chooser' function
     var selector = getRandomInt(0,4);
+
     //If the profanity flag is set, then the bot simply sends this text to the user
     if (profanity_flag){
       socket.emit('server_response', {response: "Watch your language LOL"});
     }
     //if the flag is not set, then all the text is sent to Wit.ai to determine which category it falls under
+    // The if statement below is used to determine whether or not the user needs weather info
+    else if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("weather") || weather_flag == true){ //Check if the users text contains the word 'weather'
+    //The above if statement will be true if the sentence conatins 'weather' or if the weather flag is still set to true. 
+      var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+      
+      client.message(dataA.reason, {})
+      .then((data) => {
+
+        
+        if (weather_flag == false){//If the weather flag is false, which means the user is just asking about weather, we check if the have specified a day
+          if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")) { //If the user has specififed to get weather for today, the getweather function will be ran
+            if(data.entities.location != undefined){
+              if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
+                getweather("today", data.entities.location[0].value.replace(" ", ","));
+                console.log(data.entities.location[0].value.replace(" ", ","))
+              }
+            // else {
+            //   getweather("today", data.entities.location[0].value.replace(" ", ","));
+            // }
+            }
+            else{
+              getweather("today")
+            }
+            
+            
+          }
+          else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")) {//If the user has specififed to get weather for tomorrow, the getweather function will be ran
+            if(data.entities.location != undefined){
+              if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
+                getweather("tomorrow", data.entities.location[0].value.replace(" ", ","));
+                console.log(data.entities.location[0].value.replace(" ", ","))
+              }
+            // else {
+            //   getweather("today", data.entities.location[0].value.replace(" ", ","));
+            // }
+            }
+            else{
+              getweather("tomorrow");
+            }
+          }
+          else {//If the user hasn't specified the day, the chatbot will ask them which day they want the weather for
+            weather_flag = true;          
+            if(data.entities.location != undefined){
+              socket.emit('server_response', {response: "Weather in "+data.entities.location[0].value+" for today or tomorrow?&#129300;"});
+              hold_city = data.entities.location[0].value
+              console.log("Store hold city val", hold_city)
+            }
+            else {
+              socket.emit('server_response', {response: "Weather for today or tomorrow?&#129300;"});
+            }
+          }
+        }
+        //if the weather flag is already active, then the bot will simply check to see if the user's sentence contains 'today' or 'tomorrow'
+        else if (weather_flag == true){
+          console.log("Hold city:", hold_city)
+          if (hold_city != undefined){
+            if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
+              getweather("today", hold_city.replace(" ", ","));
+              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              weather_flag = false
+              hold_city = undefined
+            }
+            else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
+              getweather("tomorrow", hold_city.replace(" ", ","));
+              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              weather_flag = false
+              hold_city = undefined
+            }
+            else{
+              weather_flag = false
+            }
+          }
+          else {
+            if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
+              getweather("today");
+              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              weather_flag = false
+            }
+            else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
+              getweather("tomorrow");
+              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              weather_flag = false
+            }
+            else{
+              weather_flag = false
+            }
+          }
+        }
+      })
+      
+    }
     else {
       client.message(dataA.reason, {})
       .then((data) => {
-            // The if statement below is used to determine whether or not the user needs weather info
-            if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("weather") || weather_flag == true){ //Check if the users text contains the word 'weather'
-            //The above if statement will be true if the sentence conatins 'weather' or if the weather flag is still set to true. 
-              if (weather_flag == false){//If the weather flag is false, which means the user is just asking about weather, we check if the have specified a day
-                if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")) { //If the user has specififed to get weather for today, the getweather function will be ran
-                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
-                  getweather("today");
-                }
-                else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")) {//If the user has specififed to get weather for tomorrow, the getweather function will be ran
-                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
-                  getweather("tomorrow");
-                }
-                else {//If the user hasn't specified the day, the chatbot will ask them which day they want the weather for
-                  weather_flag = true;
-                  socket.emit('server_response', {response: "Weather for today or tomorrow?&#129300;"});
-                }
-              }
-              //if the weather flag is already active, then the bot will simply check to see if the user's sentence contains 'today' or 'tomorrow'
-              else if (weather_flag == true){
-                
-                if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
-                  getweather("today");
-                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
-                  weather_flag = false
-                }
-                else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
-                  getweather("tomorrow");
-                  var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
-                  weather_flag = false
-                }
-                else{
-                  weather_flag = false
-                }
-              }
-            }
+            
             //If the user entered in a greeting such as "hello" or "hey", this response is sent back to them
-            else if (Object.keys(data.entities) == "greetings"){
+            if (Object.keys(data.entities) == "greetings"){
               socket.emit('server_response', {response: "Hello, What do you need help with?"});
             }
             //If the entity returned by Wit is "oracle_info", that means the user has asked a question specifically about the habari bot, such as "how old are you?"
