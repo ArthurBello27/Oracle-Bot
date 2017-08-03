@@ -11,6 +11,7 @@ function existsInArray(array, item) {
 var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg" ]
 var $ 
 var ip;
+var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
 var hold_city; //This variable simply stores the city the user types when theyre checking for weather. Will be 'undefined' if user doesnt put any city
 var request = require('request'); //Module for requesting web pages
 var cheerio = require('cheerio'); //Module used for crawling
@@ -31,22 +32,22 @@ var express = require("express");
 var mongoose = require('mongoose');
 
 //Database use for server
-var config=JSON.parse(process.env.APP_CONFIG);
-var mongoPassword = 'Arthurmide98';
-mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
-var EntrySchema = new mongoose.Schema({
- category: String,
- value: String
-})
-var Entry = mongoose.model('all_entries', EntrySchema);
-
-//Database use for localhost
-// mongoose.connect('mongodb://localhost/gtchatbot');
+// var config=JSON.parse(process.env.APP_CONFIG);
+// var mongoPassword = 'Arthurmide98';
+// mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
 // var EntrySchema = new mongoose.Schema({
 //  category: String,
 //  value: String
 // })
 // var Entry = mongoose.model('all_entries', EntrySchema);
+
+//Database use for localhost
+mongoose.connect('mongodb://localhost/gtchatbot');
+var EntrySchema = new mongoose.Schema({
+ category: String,
+ value: String
+})
+var Entry = mongoose.model('all_entries', EntrySchema);
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
@@ -278,7 +279,6 @@ function crawl_google(search_query){
     // The if statement below is used to determine whether or not the user needs weather info
     else if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("weather") || weather_flag == true){ //Check if the users text contains the word 'weather'
     //The above if statement will be true if the sentence conatins 'weather' or if the weather flag is still set to true. 
-      var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
       
       client.message(dataA.reason, {})
       .then((data) => {
@@ -290,6 +290,7 @@ function crawl_google(search_query){
               if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
                 getweather("today", data.entities.location[0].value.replace(" ", ","));
                 console.log(data.entities.location[0].value.replace(" ", ","))
+                threetries = 0;
               }
             // else {
             //   getweather("today", data.entities.location[0].value.replace(" ", ","));
@@ -297,6 +298,7 @@ function crawl_google(search_query){
             }
             else{
               getweather("today")
+              threetries = 0;
             }
             
             
@@ -306,6 +308,7 @@ function crawl_google(search_query){
               if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
                 getweather("tomorrow", data.entities.location[0].value.replace(" ", ","));
                 console.log(data.entities.location[0].value.replace(" ", ","))
+                threetries = 0;
               }
             // else {
             //   getweather("today", data.entities.location[0].value.replace(" ", ","));
@@ -313,6 +316,7 @@ function crawl_google(search_query){
             }
             else{
               getweather("tomorrow");
+              threetries = 0;
             }
           }
           else {//If the user hasn't specified the day, the chatbot will ask them which day they want the weather for
@@ -333,13 +337,13 @@ function crawl_google(search_query){
           if (hold_city != undefined){
             if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
               getweather("today", hold_city.replace(" ", ","));
-              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
               hold_city = undefined
             }
             else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
               getweather("tomorrow", hold_city.replace(" ", ","));
-              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
               hold_city = undefined
             }
@@ -350,12 +354,12 @@ function crawl_google(search_query){
           else {
             if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
               getweather("today");
-              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
             }
             else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
               getweather("tomorrow");
-              var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+              threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
             }
             else{
@@ -369,7 +373,6 @@ function crawl_google(search_query){
     else {
       client.message(dataA.reason, {})
       .then((data) => {
-            
             //If the user entered in a greeting such as "hello" or "hey", this response is sent back to them
             if (Object.keys(data.entities) == "greetings"){
               socket.emit('server_response', {response: "Hello, What do you need help with?"});
@@ -413,7 +416,7 @@ function crawl_google(search_query){
             }
             //Now, the statement below is executed if Wit.ai doesn't return any response. This will be the case if the user
             //is not asking the bot anything habari specific or direct personal questions to the bot itself
-            else if (Object.size(data.entities) === 0){
+            else if ($.inArray("intent", Object.keys(data.entities)) == -1){
                   //An XMLHttpRequest is made to Wolfram Aplha's api. This Api is used to answer general questions such as "How tall is the Eiffel Tower?"
                   //Sometimes, the answer provided by the api doesn't make sense E.g in a case where a user types "LL Cool J", the api also returns "LL Cool J"
                   //as the answer. Answers like this have been filtered out in the function below
@@ -443,7 +446,7 @@ function crawl_google(search_query){
             }
             //This section houses all the available answers to questions on anything habari related. The entity is labelled as intent. We can basically take "intent" to mean "Habari App info" in a theoretical sense.
             //All the values and entities used are must be the same as those specified in Wit.ai
-            else if(Object.keys(data.entities) == "intent"){
+            else if($.inArray("intent", Object.keys(data.entities)) != -1){
               var ind
               //Detailed explanation: The database used in the project is MongoDB, which is ideal for NodeJS apps;
               //The collection used below is the 'entry' collection. It has two columns: category & value.
