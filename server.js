@@ -31,8 +31,9 @@ var path = require("path");
 var express = require("express");
 var mongoose = require('mongoose');
 
-//Database use for server
+
 if (process.env.APP_CONFIG == undefined){
+  //Database use for server
    mongoose.connect('mongodb://localhost/gtchatbot');
   var EntrySchema = new mongoose.Schema({
    category: String,
@@ -41,6 +42,7 @@ if (process.env.APP_CONFIG == undefined){
   var Entry = mongoose.model('all_entries', EntrySchema); 
 }
 else {
+  //Database use for localhost
   var config=JSON.parse(process.env.APP_CONFIG);
 var mongoPassword = 'Arthurmide98';
 mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
@@ -51,15 +53,6 @@ var EntrySchema = new mongoose.Schema({
 var Entry = mongoose.model('all_entries', EntrySchema);
 }
 
-
-//Database use for localhost *****
-// mongoose.connect('mongodb://localhost/gtchatbot');
-// var EntrySchema = new mongoose.Schema({
-//  category: String,
-//  value: String
-// })
-// var Entry = mongoose.model('all_entries', EntrySchema);
-//ends here *****
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
@@ -77,9 +70,8 @@ app.use( express.static( "public" ) );
 app.get('/', function(req, res) {
  res.render('indexpage');
 })
-app.get('/home', function(req, res) {
- res.render('home');
-})
+
+//The url below is used to add categories and values to the chatbot. It als contains all the categories and values for them to be edited or deleted
 app.get('/add_to_bot', function(req, res) {
   Entry.find({}, function (err, entries){
         // loads a view called 'user.ejs' and passed the user object to the view!
@@ -87,8 +79,8 @@ app.get('/add_to_bot', function(req, res) {
     }).sort({_id:-1})
  
 })
+//Send data to the url below in order to add a new entry (category and a value)
 app.post('/make_entry', function(req, res) {
-  console.log("POST DATA", req.body);
   var newEntry = new Entry({category: req.body.category, value: req.body.value});
     // try to save that new user to the database (this is the method that actually inserts into the db) and run a callback function with an error (if any) from the operation.
     newEntry.save(function(err) {
@@ -96,17 +88,14 @@ app.post('/make_entry', function(req, res) {
       
     })
 })
+//Send data to the url below to update an entry (either category or value). The data is sent with AJAX so it doesn't refresh the page
 app.post('/update_entry', function(req, res) {
-  console.log("POST DATA", req.body);
-  console.log("updating");
   Entry.update({category: req.body.old_category}, {category: req.body.new_category, value: req.body.new_value}, function (err, entry){
         res.redirect('/');
     })
 })
-
+//Send data to the url below to remove an entry. The data is sent with AJAX so it doesn't refresh the page
 app.post('/remove_entry', function(req, res) {
-  console.log("POST DATA", req.body);
-  console.log("updating");
   Entry.remove({category: req.body.category}, function (err, user){
     res.redirect('/');
 })
@@ -114,10 +103,6 @@ app.post('/remove_entry', function(req, res) {
 //This is the page where the Habari Oracle is contained
 app.get('/chatInterface', function(req, res) {
  res.render('chat');
-})
-
-app.get('/action/:id', function(req, res) {
- res.render('action', {id: req.params.id});
 })
 //process.env.PORT will use the browsers port
 var server = app.listen(process.env.PORT || 8000, function() {
@@ -188,13 +173,14 @@ function getweather (day, location) {
     //Once the lat & long have been received, another request is made to a weather API so we can get the weather
     //for the specific location for the specific day
     var make_url
-    if (location == undefined){
+    if (location == undefined){ //If no location is specified, then the users current location will be sent
       make_url = "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+dataA.loc+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json"
     }
-    else {
+    else { //if there is a location specified, it will be used
       make_url = "http://api.worldweatheronline.com/premium/v1/weather.ashx?key=6006e6a4d1d04af096370049171907&q="+location+"&includelocation=yes&date="+day+"&tp=3&num_of_days=2&format=json"
     }
-    console.log(make_url)
+
+    //Here, the ajax call is sent to the API
     $.ajax({
       type: 'GET',
       dataType: 'json',
@@ -202,7 +188,6 @@ function getweather (day, location) {
       //dataA.loc is where the location of the user goes
       url: make_url,
       success: function(data) {
-        // console.log("we good", data.data.weather)
         if (data.data.nearest_area != undefined){
           if (day == "today"){
             var weather_response = "Here is the weather for "+data.data.nearest_area[0].region[0].value+", "+data.data.nearest_area[0].country[0].value+" "+day+":<br>"
@@ -217,14 +202,15 @@ function getweather (day, location) {
           }
         }
         else {
-          socket.emit('server_response', {response: "Sorry, I was unable to get the weather."});
+          socket.emit('server_response', {response: "Sorry, I was unable to get the weather."}); //Send this message if the weather wasn't retrievable
         }
       },
-      //https://maps.googleapis.com/maps/api/place/autocomplete/json?input=Vict&types=country&key=AIzaSyCEYwHXlHLjerTAvqNSw6xMKVaoz587_B8
       error: function(err){
+        //If we can an error with getting the weather, we will try again three times
         if (threetries < 4){
           getweather (day);
         }
+        //If there is still no weather after the three tries, then we send this message.
         else if(threetries >= 4){
           socket.emit('server_response', {response: "Sorry, I was unable to get the weather."});
         }
@@ -384,25 +370,8 @@ function crawl_google(search_query){
     else {
       client.message(dataA.reason, {})
       .then((data) => {
-            //If the user entered in a greeting such as "hello" or "hey", this response is sent back to them
-            if (Object.keys(data.entities) == "greetings"){
-              socket.emit('server_response', {response: "Hello, What do you need help with?"});
-            }
-            //If the entity returned by Wit is "oracle_info", that means the user has asked a question specifically about the habari bot, such as "how old are you?"
-            else if('oracle_info' in data.entities){
-              //The value of the entity is then checked to know the specific response to give.
-              if (data.entities.oracle_info[0].value == "name") {
-                socket.emit('server_response', {response: "My name is Hekima"});
-              }
-              else if (data.entities.oracle_info[0].value == "age") {
-                socket.emit('server_response', {response: "My age is actually unknown&#129300;"});
-              }
-              else if (data.entities.oracle_info[0].value == "place_of_birth") {
-                socket.emit('server_response', {response: "I'm from South Africa, but my parents are Nigerians&#128524"});
-              }
-            }
             //This statement checks to see if the user asked a 'friendly question' towards the habari bot, such as "how is your day going?"
-            else if ('friendly_question' in data.entities ){
+            if ('friendly_question' in data.entities ){
                 if (data.entities.friendly_question[0].value == "true_regarding_your_day") {
                   socket.emit('server_response', {response: "My day is wonderful as ever&#127775"});
                 }
@@ -424,6 +393,24 @@ function crawl_google(search_query){
                     socket.emit('server_response', {response: "I'm all smiles as usual, thanks for asking&#128513"});
                   }
                 }
+            }
+            
+            //If the entity returned by Wit is "oracle_info", that means the user has asked a question specifically about the habari bot, such as "how old are you?"
+            else if('oracle_info' in data.entities){
+              //The value of the entity is then checked to know the specific response to give.
+              if (data.entities.oracle_info[0].value == "name") {
+                socket.emit('server_response', {response: "My name is Hekima"});
+              }
+              else if (data.entities.oracle_info[0].value == "age") {
+                socket.emit('server_response', {response: "My age is actually unknown&#129300;"});
+              }
+              else if (data.entities.oracle_info[0].value == "place_of_birth") {
+                socket.emit('server_response', {response: "I'm from South Africa, but my parents are Nigerians&#128524"});
+              }
+            }
+            //If the user entered in a greeting such as "hello" or "hey", this response is sent back to them
+            else if ("greetings" in data.entities){
+              socket.emit('server_response', {response: "Hello, What do you need help with?"});
             }
             //Now, the statement below is executed if Wit.ai doesn't return any response. This will be the case if the user
             //is not asking the bot anything habari specific or direct personal questions to the bot itself

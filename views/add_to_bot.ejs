@@ -48,7 +48,7 @@
 				  </tr>
 			     <% var count = 1; for (var x in entries) { %>
 			     <% if (entries[x].value != undefined){ %>
-			      <td><%= count %></td><td class="categories"><input class="old_category" name="old_category" hidden value=<%= entries[x].category %>><input class="table_input new_category" name="new_category" value=<%= entries[x].category %>></td><td class="textareas"><textarea class="new_value" name="new_value" cols=60 rows=7> <%= entries[x].value %></textarea></td><td class="delete" style="color:red; cursor: pointer; font-weight:800">X</td>
+			      <td><%= count %></td><td class="categories"><input class="old_category" name="old_category" hidden value="<%= entries[x].category %>"><input class="table_input new_category" name="new_category" value="<%= entries[x].category %>"></td><td class="textareas"><textarea class="new_value" name="new_value" cols=60 rows=7> <%= entries[x].value %></textarea></td><td class="delete" style="color:red; cursor: pointer; font-weight:800">X</td>
 			     </tr>
 			     <%count +=1 } %>
 			     <% } %>
