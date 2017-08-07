@@ -8,7 +8,7 @@ function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
 
-var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg", "xxx", "porn" ]
+var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg", "xxx", "porno" ]
 var $ 
 var ip;
 var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
@@ -32,28 +32,23 @@ var express = require("express");
 var mongoose = require('mongoose');
 
 //Database use for server
-if (process.env.APP_CONFIG == undefined){
-  mongoose.connect('mongodb://localhost/gtchatbot');
-  var EntrySchema = new mongoose.Schema({
-   category: String,
-   value: String
-  })
-  var Entry = mongoose.model('all_entries', EntrySchema);
-}
-else {
-  var config=JSON.parse(process.env.APP_CONFIG);
-  var mongoPassword = 'Arthurmide98';
-  mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
-  var EntrySchema = new mongoose.Schema({
-   category: String,
-   value: String
-  })
-  var Entry = mongoose.model('all_entries', EntrySchema);
-}
+var config=JSON.parse(process.env.APP_CONFIG);
+var mongoPassword = 'Arthurmide98';
+mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
+var EntrySchema = new mongoose.Schema({
+ category: String,
+ value: String
+})
+var Entry = mongoose.model('all_entries', EntrySchema);
 
-
-//Database use for localhost
-
+//Database use for localhost *****
+// mongoose.connect('mongodb://localhost/gtchatbot');
+// var EntrySchema = new mongoose.Schema({
+//  category: String,
+//  value: String
+// })
+// var Entry = mongoose.model('all_entries', EntrySchema);
+//ends here *****
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
@@ -100,7 +95,7 @@ app.post('/update_entry', function(req, res) {
 
 app.post('/remove_entry', function(req, res) {
   console.log("POST DATA", req.body);
-  console.log("updating"); 
+  console.log("updating");
   Entry.remove({category: req.body.category}, function (err, user){
     res.redirect('/');
 })
