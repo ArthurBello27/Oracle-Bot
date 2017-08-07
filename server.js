@@ -8,7 +8,7 @@ function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
 
-var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg" ]
+var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg", "xxx", "porn" ]
 var $ 
 var ip;
 var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
@@ -32,22 +32,28 @@ var express = require("express");
 var mongoose = require('mongoose');
 
 //Database use for server
-var config=JSON.parse(process.env.APP_CONFIG);
-var mongoPassword = 'Arthurmide98';
-mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
-var EntrySchema = new mongoose.Schema({
- category: String,
- value: String
-})
-var Entry = mongoose.model('all_entries', EntrySchema);
+if (process.env.APP_CONFIG == undefined){
+  mongoose.connect('mongodb://localhost/gtchatbot');
+  var EntrySchema = new mongoose.Schema({
+   category: String,
+   value: String
+  })
+  var Entry = mongoose.model('all_entries', EntrySchema);
+}
+else {
+  var config=JSON.parse(process.env.APP_CONFIG);
+  var mongoPassword = 'Arthurmide98';
+  mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
+  var EntrySchema = new mongoose.Schema({
+   category: String,
+   value: String
+  })
+  var Entry = mongoose.model('all_entries', EntrySchema);
+}
+
 
 //Database use for localhost
-// mongoose.connect('mongodb://localhost/gtchatbot');
-// var EntrySchema = new mongoose.Schema({
-//  category: String,
-//  value: String
-// })
-// var Entry = mongoose.model('all_entries', EntrySchema);
+
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; 
 var app = express();
@@ -94,7 +100,7 @@ app.post('/update_entry', function(req, res) {
 
 app.post('/remove_entry', function(req, res) {
   console.log("POST DATA", req.body);
-  console.log("updating");
+  console.log("updating"); 
   Entry.remove({category: req.body.category}, function (err, user){
     res.redirect('/');
 })
@@ -134,7 +140,6 @@ Object.size = function(obj) {
 
 var io = require('socket.io').listen(server) 
 io.sockets.on('connection', function (socket) {
-
   //The function below is a selector to randomly choose the sentece that is sent to the user after their question has been answered.
   //They all have a 2 second delay
   function chooser(selector){
@@ -273,7 +278,7 @@ function crawl_google(search_query){
 
     //If the profanity flag is set, then the bot simply sends this text to the user
     if (profanity_flag){
-      socket.emit('server_response', {response: "Watch your language LOL"});
+      socket.emit('server_response', {response: "Watch your language please&#x1f64a;"});
     }
     //if the flag is not set, then all the text is sent to Wit.ai to determine which category it falls under
     // The if statement below is used to determine whether or not the user needs weather info
@@ -446,7 +451,7 @@ function crawl_google(search_query){
             }
             //This section houses all the available answers to questions on anything habari related. The entity is labelled as intent. We can basically take "intent" to mean "Habari App info" in a theoretical sense.
             //All the values and entities used are must be the same as those specified in Wit.ai
-            else if($.inArray("intent", Object.keys(data.entities)) != -1){
+            else if($.inArray("intent", Object.keys(data.entities)) != -1 || Object.keys(data.entities) == "intent"){
               var ind
               //Detailed explanation: The database used in the project is MongoDB, which is ideal for NodeJS apps;
               //The collection used below is the 'entry' collection. It has two columns: category & value.
