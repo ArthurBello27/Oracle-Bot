@@ -32,7 +32,16 @@ var express = require("express");
 var mongoose = require('mongoose');
 
 //Database use for server
-var config=JSON.parse(process.env.APP_CONFIG);
+if (process.env.APP_CONFIG == undefined){
+   mongoose.connect('mongodb://localhost/gtchatbot');
+  var EntrySchema = new mongoose.Schema({
+   category: String,
+   value: String
+  })
+  var Entry = mongoose.model('all_entries', EntrySchema); 
+}
+else {
+  var config=JSON.parse(process.env.APP_CONFIG);
 var mongoPassword = 'Arthurmide98';
 mongoose.connect("mongodb://" + config.mongo.user + ":" + mongoPassword + "@" +config.mongo.hostString);
 var EntrySchema = new mongoose.Schema({
@@ -40,6 +49,8 @@ var EntrySchema = new mongoose.Schema({
  value: String
 })
 var Entry = mongoose.model('all_entries', EntrySchema);
+}
+
 
 //Database use for localhost *****
 // mongoose.connect('mongodb://localhost/gtchatbot');
