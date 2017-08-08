@@ -8,10 +8,12 @@ function existsInArray(array, item) {
     return array.indexOf(item.toLowerCase()) > -1;
 }
 
-var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg", "xxx", "porno" ]
+var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg", "xxx", "porno", "sex" ]
 var $ 
 var ip;
+var timeout;
 var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
+var timesup= 0 // Variable for the overall timer
 var hold_city; //This variable simply stores the city the user types when theyre checking for weather. Will be 'undefined' if user doesnt put any city
 var request = require('request'); //Module for requesting web pages
 var cheerio = require('cheerio'); //Module used for crawling
@@ -164,9 +166,6 @@ io.sockets.on('connection', function (socket) {
 //The function below is used to get weather for either 'today' or 'tomorrow'
 
 function getweather (day, location) {
-  console.log(location)
-  socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
-
   //This first request is used to get the ip address, location and lat & long of the user.
   //It will most likely be changed as this will not get the users location on a phone.
   $.getJSON('http://ipinfo.io', function(dataA){
@@ -208,7 +207,7 @@ function getweather (day, location) {
       error: function(err){
         //If we can an error with getting the weather, we will try again three times
         if (threetries < 4){
-          getweather (day);
+          getweather (day, location);
         }
         //If there is still no weather after the three tries, then we send this message.
         else if(threetries >= 4){
@@ -228,9 +227,15 @@ function getweather (day, location) {
 //If it isn't then the first result is sent back to the user.
 function crawl_google(search_query){
     var description_array = []; //This variable holds the text of the information that will be returned to the user
-    request('https://www.duckduckgo.com/html/?q='+encodeURIComponent(search_query).split("%20").join("+"), function (error, response, html) { //This function first gets the request
+    console.log("start")
+    request({url: 'https://www.duckduckgo.com/html/?q='+encodeURIComponent(search_query).split("%20").join("+"), timeout: 6000}, function (error, response, html) { //This function first gets the request
+      if (response == undefined){
+        socket.emit('server_response', {response: ""});
+        return;
+      }
       var che = cheerio.load(html); // The cheerio node module is then responsible for parsing, loading and crawling through the HTML of the requested page. It works just as JQuery
       //Basically, the 'che' variable is the same as the dollar sign ($) in JQuery
+
       var iteration; //This variable is the index of the iteration of a certain array.
 
       che('#zero_click_abstract').each(function(i, element){ //This function loops through the "zero_click_abstract" element, which is located in the HTML gotten from the DuckDuckGo search. There will most likely only be one "zero_click_abstract" NOTE!!! is there is ever an error with this section, the simple solution would be to print out the html received from duckduckgo by doing console.log(html) and checking if the ID/Class name has been changed
@@ -248,7 +253,12 @@ function crawl_google(search_query){
       if (description_array.length == 0){ //In a situation where there is no 'zero click' information returned, the description array will be empty at this point.
         //So therefore, the first link and description gotten from the search are sent to the user.
       //NOTE!!! is there is ever an error with this section, the simple solution would be to print out the html received from duckduckgo by doing console.log(html) and checking if the ID/Class name has been changed
-        socket.emit('didyoumean', {response: "<a href='"+decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])+"'><div class='chatbot'><p class='chatbotspan'>"+che('.web-result .result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br></p></div></a>"});
+        if (che('.web-result .result__snippet').first().attr('href') == undefined){
+          socket.emit('server_response', {response: "Couldnt find what you're looking for lol"});
+        }
+        else{
+          socket.emit('didyoumean', {response: "<a href='"+decodeURIComponent(che('.web-result .result__snippet').first().attr('href').split("g=")[1])+"'><div class='chatbot'><p class='chatbotspan'>"+che('.web-result .result__snippet').first().text()+"<span style='color: #824F5D'> click for more</span><br></p></div></a>"});
+        }
       }
     });
       
@@ -260,7 +270,7 @@ function crawl_google(search_query){
     var profanity_flag = false //This profanity flag is used to check if there are any curse words in the users text.
     for (indexA in dataA.reason.split(" ")){
       for (indexB in profanity){
-        if(dataA.reason.split(" ")[indexA].indexOf(profanity[indexB]) != -1 ){  //If there are any curse words, the profanity flag will be set to true.
+        if(dataA.reason.split(" ")[indexA].toLowerCase().indexOf(profanity[indexB]) != -1 ){  //If there are any curse words, the profanity flag will be set to true.
           profanity_flag = true;
         }
       }
@@ -285,6 +295,7 @@ function crawl_google(search_query){
           if(dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")) { //If the user has specififed to get weather for today, the getweather function will be ran
             if(data.entities.location != undefined){
               if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
+                socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
                 getweather("today", data.entities.location[0].value.replace(" ", ","));
                 console.log(data.entities.location[0].value.replace(" ", ","))
                 threetries = 0;
@@ -294,6 +305,7 @@ function crawl_google(search_query){
             // }
             }
             else{
+              socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
               getweather("today")
               threetries = 0;
             }
@@ -303,6 +315,7 @@ function crawl_google(search_query){
           else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")) {//If the user has specififed to get weather for tomorrow, the getweather function will be ran
             if(data.entities.location != undefined){
               if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
+                socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
                 getweather("tomorrow", data.entities.location[0].value.replace(" ", ","));
                 console.log(data.entities.location[0].value.replace(" ", ","))
                 threetries = 0;
@@ -312,6 +325,7 @@ function crawl_google(search_query){
             // }
             }
             else{
+              socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
               getweather("tomorrow");
               threetries = 0;
             }
@@ -333,12 +347,14 @@ function crawl_google(search_query){
           console.log("Hold city:", hold_city)
           if (hold_city != undefined){
             if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
+              socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
               getweather("today", hold_city.replace(" ", ","));
               threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
               hold_city = undefined
             }
             else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
+              socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
               getweather("tomorrow", hold_city.replace(" ", ","));
               threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
@@ -350,11 +366,13 @@ function crawl_google(search_query){
           }
           else {
             if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
+              socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
               getweather("today");
               threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
             }
             else if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tomorrow")){
+              socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
               getweather("tomorrow");
               threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
               weather_flag = false
@@ -370,6 +388,7 @@ function crawl_google(search_query){
     else {
       client.message(dataA.reason, {})
       .then((data) => {
+            //Request has 10 seconds to complete
             //This statement checks to see if the user asked a 'friendly question' towards the habari bot, such as "how is your day going?"
             if ('friendly_question' in data.entities ){
                 if (data.entities.friendly_question[0].value == "true_regarding_your_day") {
@@ -427,6 +446,8 @@ function crawl_google(search_query){
                       if (dataA.reason.toLowerCase().includes(this.responseText.toLowerCase()) && this.responseText.split(" ").length <= 5){ //Based on the pattern of responses I saw from the api, this if statemnt correctly filters 
                       //out issues with the api returning the question as the answer and simply sends the request to the Crawler
                         crawl_google(dataA.reason); 
+                        // clearTimeout(timesup);
+
                       }
                       else if ((this.responseText.split(" ").length >= 3 || !isNaN(this.responseText.split(" ")[0])) && (this.responseText.indexOf("word definition") == -1)){ //This if statement also filters out based on patterns I noticed. 
                       //If the statement is true, that means a meaningful and most likely correct response was sent bacl. It is then sent to the user.
@@ -457,8 +478,10 @@ function crawl_google(search_query){
               Entry.find({},function (err, entry){ //This function will get every single entry from our database
                   for (ind in entry){ //This for loop will loop through each funciton
                     if (entry[ind].category == data.entities.intent[0].value){  //This if statement will then check to see if the category is the same as the one which Wit.ai has returned back after analyzing the users text
+                      clearTimeout(timesup);
                       socket.emit('server_response', {response: entry[ind].value}); //It will then send the value you have specified for that category back to the user through the Bot.
                       chooser(selector)
+                      
                     }
                   }
                   // res.render('user', {user: user});
@@ -467,7 +490,9 @@ function crawl_google(search_query){
             }
       
     })
-    .catch(console.error);
+    .catch(function(){
+      socket.emit('server_response', {response: "No internet service lol"});
+    })
   }
     
 })
