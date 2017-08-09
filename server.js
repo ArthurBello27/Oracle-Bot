@@ -114,7 +114,7 @@ const {Wit, log} = require('node-wit');
 const client = new Wit({accessToken: 'UC2FRHQWCW2LRF34ECB2XEE5S7L7ZJNJ'});
 
 //New Object function used to determine the size of an object
-Object.size = function(obj) {
+Object.size = function(obj) { 
   var size = 0, key;
   for (key in obj) {
       if (obj.hasOwnProperty(key)) size++;
