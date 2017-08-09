@@ -192,7 +192,7 @@ function getweather (day, location) {
           }
         }
         else {
-          socket.emit('server_response', {response: "Sorry, I was unable to get the weather."}); //Send this message if the weather wasn't retrievable
+          socket.emit('server_response', {response: "I'm not sure I recognize that location&#9785; &#65039; Could you try somewhere else?"}); //Send this message if the weather wasn't retrievable
         }
       },
       error: function(err){
@@ -202,7 +202,7 @@ function getweather (day, location) {
         }
         //If there is still no weather after the three tries, then we send this message.
         else if(threetries >= 4){
-          socket.emit('server_response', {response: "Sorry, I was unable to get the weather."});
+          socket.emit('server_response', {response: "Oh no, something went wrong&#9785; &#65039; I was unable to get the weather."});
         }
         threetries += 1;
       }
@@ -476,7 +476,7 @@ function crawl_google(search_query){
             }
     })
     .catch(function(){
-      socket.emit('server_response', {response: "No internet service lol"});
+      socket.emit('server_response', {response: "I'm a bit tired now, come back in a few moments."});
     })
   }
     
