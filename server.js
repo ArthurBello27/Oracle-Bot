@@ -100,7 +100,7 @@ app.post('/remove_entry', function(req, res) {
   Entry.remove({category: req.body.category}, function (err, user){
     res.redirect('/');
 })
-})
+}) 
 //This is the page where the Habari Oracle is contained
 app.get('/chatInterface', function(req, res) {
  res.render('chat');
