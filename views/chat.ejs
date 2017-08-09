@@ -168,6 +168,7 @@
         a:visited {
             color: green;
         }
+        
         @media (min-width:1025px) { #content {
             overflow: auto;
             width: 98.5%;
@@ -206,7 +207,6 @@
                     }
             });
              $('#go').click(function (){
-                // console.log($('input').val());
                 if($('input').val() != "" && $('input').val() != " "){
                     $('button').prop('disabled', 'disabled');
                     $('#content').append("<div class='user'><span class='userspan'>"+$('input').val()+"</span></div>");
@@ -225,7 +225,6 @@
                 socket.on('server_response', function (data){
                     $('button').prop('disabled', false);
                     $('#content').append("<div class='chatbot'><p class='chatbotspan'>"+data.response+"</p></div>");
-                    // console.log('The server says: ' + data.response);
                     objDiv.scrollTop = objDiv.scrollHeight; 
                     
                 });
@@ -251,6 +250,7 @@
 
         <h3><img style="width: 57px;" src="habari_logo.png"><span style="vertical-align: top; margin-left: 10px;">Hekima</span></h3>
         <div id="content">
+            
             <div class="chatbot"> <p class="chatbotspan">Hello! &#128075; My name is Hekima. What would you like help with?</p></div>
             <div class="chatbot"> <p class="chatbotspan">Click one of these to find out something new  &#128521;</p></div>
             <br>

@@ -19,7 +19,6 @@ var request = require('request'); //Module for requesting web pages
 var cheerio = require('cheerio'); //Module used for crawling
 require("jsdom-no-contextify").env("", function(err, window) { //JQuery module used to make Ajax calls in this app
     if (err) {
-        console.error(err);
         return;
     }
 
@@ -108,14 +107,6 @@ app.get('/chatInterface', function(req, res) {
 })
 //process.env.PORT will use the browsers port
 var server = app.listen(process.env.PORT || 8000, function() {
- console.log("listening on port 8000");
- // navigator.geolocation.getCurrentPosition(function(location) {
-
- //          console.log(location.coords.latitude);
- //          console.log(location.coords.longitude);
- //          console.log(location.coords.accuracy);
-        
- //        });
 })
 
 //Constants for WIT ai
@@ -227,7 +218,6 @@ function getweather (day, location) {
 //If it isn't then the first result is sent back to the user.
 function crawl_google(search_query){
     var description_array = []; //This variable holds the text of the information that will be returned to the user
-    console.log("start")
     request({url: 'https://www.duckduckgo.com/html/?q='+encodeURIComponent(search_query).split("%20").join("+"), timeout: 6000}, function (error, response, html) { //This function first gets the request
       if (response == undefined){
         socket.emit('server_response', {response: ""});
@@ -297,7 +287,6 @@ function crawl_google(search_query){
               if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
                 socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
                 getweather("today", data.entities.location[0].value.replace(" ", ","));
-                console.log(data.entities.location[0].value.replace(" ", ","))
                 threetries = 0;
               }
             // else {
@@ -317,7 +306,6 @@ function crawl_google(search_query){
               if (data.entities.location[0].value.split(" ").length <= 2 && data.entities.location[0].value.split(" ").length >= 1){
                 socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
                 getweather("tomorrow", data.entities.location[0].value.replace(" ", ","));
-                console.log(data.entities.location[0].value.replace(" ", ","))
                 threetries = 0;
               }
             // else {
@@ -335,7 +323,6 @@ function crawl_google(search_query){
             if(data.entities.location != undefined){
               socket.emit('server_response', {response: "Weather in "+data.entities.location[0].value+" for today or tomorrow?&#129300;"});
               hold_city = data.entities.location[0].value
-              console.log("Store hold city val", hold_city)
             }
             else {
               socket.emit('server_response', {response: "Weather for today or tomorrow?&#129300;"});
@@ -344,7 +331,6 @@ function crawl_google(search_query){
         }
         //if the weather flag is already active, then the bot will simply check to see if the user's sentence contains 'today' or 'tomorrow'
         else if (weather_flag == true){
-          console.log("Hold city:", hold_city)
           if (hold_city != undefined){
             if (dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("today")){
               socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
@@ -488,7 +474,6 @@ function crawl_google(search_query){
               })
               
             }
-      
     })
     .catch(function(){
       socket.emit('server_response', {response: "No internet service lol"});
