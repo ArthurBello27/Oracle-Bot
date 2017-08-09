@@ -120,7 +120,7 @@ Object.size = function(obj) {
       if (obj.hasOwnProperty(key)) size++;
   }
   return size;
-};
+}; 
 
 var io = require('socket.io').listen(server) 
 io.sockets.on('connection', function (socket) {
