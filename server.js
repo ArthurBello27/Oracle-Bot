@@ -9,11 +9,10 @@ function existsInArray(array, item) {
 }
 
 var profanity = ["shit", "fuck", "damn", "bitch", "crap", "dick", "pussy", "asshole", "fag", "bastard", "slut", "nigg", "xxx", "porno", "sex" ]
+var gif_keywords = ["stupid", "cool", "funny", "sport"]
 var $ 
 var ip;
-var timeout;
 var threetries = 0; //this variable will be used to make sure getting the weather is retried a maximum of 3 times if it fails
-var timesup= 0 // Variable for the overall timer
 var hold_city; //This variable simply stores the city the user types when theyre checking for weather. Will be 'undefined' if user doesnt put any city
 var request = require('request'); //Module for requesting web pages
 var cheerio = require('cheerio'); //Module used for crawling
@@ -220,7 +219,7 @@ function crawl_google(search_query){
     var description_array = []; //This variable holds the text of the information that will be returned to the user
     request({url: 'https://www.duckduckgo.com/html/?q='+encodeURIComponent(search_query).split("%20").join("+"), timeout: 6000}, function (error, response, html) { //This function first gets the request
       if (response == undefined){
-        socket.emit('server_response', {response: ""});
+        socket.emit('server_response', {response: "Couldnt find what you're looking for lol"});
         return;
       }
       var che = cheerio.load(html); // The cheerio node module is then responsible for parsing, loading and crawling through the HTML of the requested page. It works just as JQuery
@@ -289,9 +288,6 @@ function crawl_google(search_query){
                 getweather("today", data.entities.location[0].value.replace(" ", ","));
                 threetries = 0;
               }
-            // else {
-            //   getweather("today", data.entities.location[0].value.replace(" ", ","));
-            // }
             }
             else{
               socket.emit('server_response', {response: "Give me one quick second while i get that for you&#128591"});
@@ -371,6 +367,33 @@ function crawl_google(search_query){
       })
       
     }
+    else if((dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("gif") || dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("meme") )&& (!dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("what")) && (!dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("define")) && (!dataA.reason.toLowerCase().replace(/['?!]/g, "").includes("tell"))){
+        console.log("finding gif");
+        var k 
+        var gif_keyword;
+        for (k in gif_keywords){
+          console.log(gif_keywords[k])
+          console.log("split list", dataA.reason.toLowerCase().split(" "))
+          if (dataA.reason.toLowerCase().includes(gif_keywords[k])){
+            gif_keyword = gif_keywords[k];
+            break;
+          }
+        }
+        console.log(gif_keyword);
+        if (gif_keyword == undefined){
+
+           $.getJSON('http://api.giphy.com/v1/gifs/trending?api_key=5eca4b1d9e1240a4a002d2f0081f2462&limit=5', function(dataA){
+            socket.emit('server_response', {response: "<img src='"+dataA.data[getRandomInt(0,5)].images.original.url+"'>"});
+            console.log("trend searches")
+          })
+        }else {
+          $.getJSON('http://api.giphy.com/v1/gifs/search?q='+gif_keyword+'&api_key=5eca4b1d9e1240a4a002d2f0081f2462&limit=5', function(dataA){
+            socket.emit('server_response', {response: "<img src='"+dataA.data[getRandomInt(0,5)].images.original.url+"'>"});
+            console.log(dataA.data[0].images)
+          })
+        }
+        
+    }
     else {
       client.message(dataA.reason, {})
       .then((data) => {
@@ -431,8 +454,7 @@ function crawl_google(search_query){
                     else if (this.readyState == 4 && this.status == 200) { //If the response is succesful we don't yet send it to the user. we filter first
                       if (dataA.reason.toLowerCase().includes(this.responseText.toLowerCase()) && this.responseText.split(" ").length <= 5){ //Based on the pattern of responses I saw from the api, this if statemnt correctly filters 
                       //out issues with the api returning the question as the answer and simply sends the request to the Crawler
-                        crawl_google(dataA.reason); 
-                        // clearTimeout(timesup);
+                        crawl_google(dataA.reason);
 
                       }
                       else if ((this.responseText.split(" ").length >= 3 || !isNaN(this.responseText.split(" ")[0])) && (this.responseText.indexOf("word definition") == -1)){ //This if statement also filters out based on patterns I noticed. 
@@ -464,7 +486,6 @@ function crawl_google(search_query){
               Entry.find({},function (err, entry){ //This function will get every single entry from our database
                   for (ind in entry){ //This for loop will loop through each funciton
                     if (entry[ind].category == data.entities.intent[0].value){  //This if statement will then check to see if the category is the same as the one which Wit.ai has returned back after analyzing the users text
-                      clearTimeout(timesup);
                       socket.emit('server_response', {response: entry[ind].value}); //It will then send the value you have specified for that category back to the user through the Bot.
                       chooser(selector)
                       
